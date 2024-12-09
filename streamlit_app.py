@@ -1,8 +1,43 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
+# Load the uploaded file
+file_path = 'C:/Users\X2006936/fatigue_dashboard/corrected_fatigue_simulation_data.csv'
+data = pd.read_csv(file_path)
+
+# 1. 特征和标签
+X = data.drop(columns=["Fatigue_Label"])
+y = data["Fatigue_Label"]
+
+# 统一特征列名，避免空格
+X.columns = X.columns.str.replace(' ', '_')
+
+# 2. 数据划分
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 3. 模型训练
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# 4. 预测
+y_pred = model.predict(X_test)
+
+# 5. 评估
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+# 训练一个简单的模型
+model = RandomForestClassifier()
+model.fit(X, y)
+
+# 保存模型
+with open("fatigue_model.pkl", "wb") as f:
+    pickle.dump(model, f)
 
 # ----------------------------------------
 # 1. 加载机器学习模型
@@ -40,16 +75,16 @@ def user_input_features():
 
     # 将输入汇总为一个 DataFrame
     data = {
-        "Neck Flexion": neck_flexion,
-        "Neck Extension": neck_extension,
-        "Shoulder Elevation": shoulder_elevation,
-        "Shoulder Forward": shoulder_forward,
-        "Elbow Flexion": elbow_flexion,
-        "Wrist Extension": wrist_extension,
-        "Wrist Deviation": wrist_deviation,
-        "Back Flexion": back_flexion,
-        "Task Duration": task_duration,
-        "Movement Frequency": movement_frequency,
+        "Neck_Flexion": neck_flexion,
+        "Neck_Extension": neck_extension,
+        "Shoulder_Elevation": shoulder_elevation,
+        "Shoulder_Forward": shoulder_forward,
+        "Elbow_Flexion": elbow_flexion,
+        "Wrist_Extension": wrist_extension,
+        "Wrist_Deviation": wrist_deviation,
+        "Back_Flexion": back_flexion,
+        "Task_Duration": task_duration,
+        "Movement_Frequency": movement_frequency,
     }
     return pd.DataFrame(data, index=[0])
 
@@ -67,4 +102,3 @@ if st.button("Predict"):
     prediction = model.predict(input_data)
     st.subheader("Prediction Result")
     st.write(f"Fatigue Level: {prediction[0]}")
-
