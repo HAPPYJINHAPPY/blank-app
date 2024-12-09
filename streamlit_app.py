@@ -1,70 +1,70 @@
 import streamlit as st
-import requests
-import matplotlib.pyplot as plt
-st.title("🎈Fatigue Prediction Dashboard")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
+import pandas as pd
+import numpy as np
+import pickle
 
-# 分组布局
-col1, col2, col3 = st.columns(3)
-with col1:
-    neck_flexion = st.number_input('Neck Flexion (°)', min_value=0, max_value=90)
-    neck_extension = st.number_input('Neck Extension (°)', min_value=0, max_value=90)
-with col2:
-    shoulder_elevation = st.number_input('Shoulder Elevation (°)', min_value=0, max_value=180)
-    shoulder_forward = st.number_input('Shoulder Forward (°)', min_value=0, max_value=180)
-with col3:
-    elbow_flexion = st.number_input('Elbow Flexion (°)', min_value=0, max_value=180)
-    wrist_extension = st.number_input('Wrist Extension (°)', min_value=0, max_value=90)
 
-# 下方布局
-wrist_deviation = st.number_input('Wrist Deviation (°)', min_value=0, max_value=90)
-back_flexion = st.number_input('Back Flexion (°)', min_value=0, max_value=90)
-task_duration = st.number_input('Task Duration (seconds)', min_value=0.0)
-movement_frequency = st.number_input('Movement Frequency (Hz)', min_value=0.0)
+# ----------------------------------------
+# 1. 加载机器学习模型
+# ----------------------------------------
+@st.cache_resource
+def load_model():
+    # 替换为你的模型路径
+    with open("fatigue_model.pkl", "rb") as f:
+        model = pickle.load(f)
+    return model
 
-# 提交预测请求
-if st.button('Predict'):
-    # 构造输入数据
-    input_data = {
-        "Neck_Flexion": neck_flexion,
-        "Neck_Extension": neck_extension,
-        "Shoulder_Elevation": shoulder_elevation,
-        "Shoulder_Forward": shoulder_forward,
-        "Elbow_Flexion": elbow_flexion,
-        "Wrist_Extension": wrist_extension,
-        "Wrist_Deviation": wrist_deviation,
-        "Back_Flexion": back_flexion,
-        "Task_Duration": task_duration,
-        "Movement_Frequency": movement_frequency,
+
+model = load_model()
+
+# ----------------------------------------
+# 2. 构建 Streamlit 应用
+# ----------------------------------------
+st.title("Fatigue Prediction Dashboard")
+
+# 创建输入表单
+st.sidebar.header("Input Parameters")
+
+
+def user_input_features():
+    neck_flexion = st.sidebar.slider("Neck Flexion", 0, 90, 45)
+    neck_extension = st.sidebar.slider("Neck Extension", 0, 90, 10)
+    shoulder_elevation = st.sidebar.slider("Shoulder Elevation", 0, 180, 90)
+    shoulder_forward = st.sidebar.slider("Shoulder Forward", 0, 90, 30)
+    elbow_flexion = st.sidebar.slider("Elbow Flexion", 0, 180, 90)
+    wrist_extension = st.sidebar.slider("Wrist Extension", 0, 90, 15)
+    wrist_deviation = st.sidebar.slider("Wrist Deviation", 0, 45, 10)
+    back_flexion = st.sidebar.slider("Back Flexion", 0, 90, 20)
+    task_duration = st.sidebar.number_input("Task Duration (seconds)", min_value=0, value=600)
+    movement_frequency = st.sidebar.number_input("Movement Frequency (times/min)", min_value=0, value=10)
+
+    # 将输入汇总为一个 DataFrame
+    data = {
+        "Neck Flexion": neck_flexion,
+        "Neck Extension": neck_extension,
+        "Shoulder Elevation": shoulder_elevation,
+        "Shoulder Forward": shoulder_forward,
+        "Elbow Flexion": elbow_flexion,
+        "Wrist Extension": wrist_extension,
+        "Wrist Deviation": wrist_deviation,
+        "Back Flexion": back_flexion,
+        "Task Duration": task_duration,
+        "Movement Frequency": movement_frequency,
     }
+    return pd.DataFrame(data, index=[0])
 
-    try:
-        # 发送 POST 请求到后端
-        response = requests.post("http://172.30.20.64:5000/predict", json=input_data)
-        prediction = response.json().get('prediction')
-        st.success(f"Predicted Fatigue Label: {prediction}")
 
-        # 可视化输入特征分布
-        st.subheader("Feature Values Visualization")
-        feature_names = [
-            'Neck Flexion', 'Neck Extension', 'Shoulder Elevation',
-            'Shoulder Forward', 'Elbow Flexion', 'Wrist Extension',
-            'Wrist Deviation', 'Back Flexion', 'Task Duration', 'Movement Frequency'
-        ]
-        feature_values = [
-            neck_flexion, neck_extension, shoulder_elevation, shoulder_forward,
-            elbow_flexion, wrist_extension, wrist_deviation, back_flexion,
-            task_duration, movement_frequency
-        ]
+input_data = user_input_features()
 
-        # 绘制柱状图
-        fig, ax = plt.subplots()
-        ax.barh(feature_names, feature_values, color='skyblue')
-        ax.set_xlabel('Feature Values')
-        ax.set_title('Input Features Distribution')
-        st.pyplot(fig)
+# 显示用户输入数据
+st.subheader("Input Parameters")
+st.write(input_data)
 
-    except Exception as e:
-        st.error(f"Error: {e}")
+# ----------------------------------------
+# 3. 预测与结果展示
+# ----------------------------------------
+if st.button("Predict"):
+    prediction = model.predict(input_data)
+    st.subheader("Prediction Result")
+    st.write(f"Fatigue Level: {prediction[0]}")
+
