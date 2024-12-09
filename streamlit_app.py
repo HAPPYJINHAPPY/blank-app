@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 # Load the uploaded file
-file_path = 'C:/Users\X2006936/fatigue_dashboard/corrected_fatigue_simulation_data.csv'
+file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
 
 # 1. 特征和标签
