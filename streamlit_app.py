@@ -42,7 +42,7 @@ if st.button('Predict'):
 
     try:
         # 发送 POST 请求到后端
-        response = requests.post("http://127.0.0.1:5000/predict", json=input_data)
+        response = requests.post("http://http://172.30.20.64:5000/predict", json=input_data)
         prediction = response.json().get('prediction')
         st.success(f"Predicted Fatigue Label: {prediction}")
 
