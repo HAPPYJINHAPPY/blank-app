@@ -18,7 +18,7 @@ import matplotlib
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 使用微软雅黑字体
 matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 # Load the uploaded file
-file_path = 'C:/Users/X2006936/fatigue_dashboard/corrected_fatigue_simulation_data.csv'
+file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
 
 # 1. Features and labels
