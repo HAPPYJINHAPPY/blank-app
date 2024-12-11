@@ -13,7 +13,9 @@ import time
 import random
 import plotly.express as px
 import matplotlib
-
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
+plt.rcParams['axes.unicode_minus'] = False    # 解决保存图像是负号'-'显示为方块的问题
 # 配置 Matplotlib 使用中文字体
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 使用微软雅黑字体
 matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
