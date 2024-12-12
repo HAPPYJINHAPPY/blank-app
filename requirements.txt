@@ -6,3 +6,4 @@ shap
 seaborn
 numpy
 plotly
+pillow
