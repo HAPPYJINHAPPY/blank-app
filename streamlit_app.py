@@ -24,18 +24,22 @@ else:
     font_name = font_prop.get_name()
     st.write(f"Loaded font: {font_name}")
 
+  # 创建自定义函数来统一设置字体
+    def set_font_properties(ax, font_prop):
+        """统一设置坐标轴和标题字体"""
+        for label in ax.get_xticklabels() + ax.get_yticklabels():
+            label.set_fontproperties(font_prop)
+        ax.title.set_fontproperties(font_prop)
+        ax.xaxis.label.set_fontproperties(font_prop)
+        ax.yaxis.label.set_fontproperties(font_prop)
     # 全局设置字体
     plt.rcParams['font.sans-serif'] = [font_name]
     plt.rcParams['axes.unicode_minus'] = False
 
-    # 示例图表
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3], [4, 5, 6])
-    ax.set_title("中文标题示例", fontproperties=font_prop)  # 显式设置字体
-    st.pyplot(fig)
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
+
 
 # 1. Features and labels
 X = data.drop(columns=["Fatigue_Label"])
@@ -436,6 +440,7 @@ elif page == "test1":
             ax.set_xlabel("天数", fontsize=12)
             ax.set_ylabel("疲劳分数", fontsize=12)
             ax.legend()
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 触发警报
@@ -456,19 +461,20 @@ elif page == "test1":
             ax.set_title("各天颈部角度分布对比", fontsize=16)
             ax.set_xlabel("天数", fontsize=12)
             ax.set_ylabel("颈部角度（度）", fontsize=12)
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 肩部抬高角度分布对比图（所有天数）
             fig, ax = plt.subplots(figsize=(10, 6))
             sns.boxplot(data=daily_stats, x='Day', y='Shoulder_Raise_Angle', ax=ax)
-            ax.set_title("各天肩部抬高角度分布对比", fontsize=16, fontproperties=font_prop)
+            ax.set_title("各天肩部抬高角度分布对比", fontsize=16)
             ax.set_xlabel("天数", fontsize=12)
             ax.set_ylabel("肩部抬高角度（度）", fontsize=12)
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 绘制每一天的角度分布（直方图）
             st.subheader("每一天角度的分布图（直方图）")
-
             # 颈部角度每一天的分布
             fig, ax = plt.subplots(figsize=(10, 6))
             for day in daily_stats['Day'].unique():
@@ -477,6 +483,8 @@ elif page == "test1":
             ax.set_xlabel("角度（度）", fontsize=12)
             ax.set_ylabel("密度", fontsize=12)
             ax.legend()
+            # 统一设置字体
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 肩部抬高角度每一天的分布
@@ -488,6 +496,7 @@ elif page == "test1":
             ax.set_xlabel("角度（度）", fontsize=12)
             ax.set_ylabel("频次", fontsize=12)
             ax.legend()
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
             # 创建单天疲劳分析区域
             st.subheader("单天疲劳分析")
@@ -515,6 +524,7 @@ elif page == "test1":
             ax.set_xlabel("角度（度）", fontsize=12)
             ax.set_ylabel("频次", fontsize=12)
             ax.legend()
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 画出该天的疲劳评分趋势（若数据为时间序列数据）
@@ -526,6 +536,7 @@ elif page == "test1":
                 ax.set_xlabel("时间", fontsize=12)
                 ax.set_ylabel("角度（度）", fontsize=12)
                 ax.legend()
+                set_font_properties(ax, font_prop)
                 st.pyplot(fig)
     else:
         st.info("请上传一个包含以下列的 CSV 文件：Day, Neck_Angle, Shoulder_Raise_Angle")
