@@ -17,36 +17,42 @@ import streamlit as st
 from matplotlib import rcParams, font_manager
 import os
 
-font_path = "SourceHanSansCN-Normal.otf"  # 替换为字体路径
-try:
+
+# 上传字体文件路径
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的字体文件路径
+
+# 检查字体是否存在
+if not os.path.exists(font_path):
+    print(f"Font file not found: {font_path}")
+else:
+    # 加载字体
     font_prop = font_manager.FontProperties(fname=font_path)
     font_name = font_prop.get_name()
     print(f"Successfully loaded font: {font_name}")
-except Exception as e:
-    print(f"Error loading font: {e}")
-# 设置字体路径
-font_path = "SourceHanSansCN-Normal.otf"  # 替换为字体路径
-font_prop = font_manager.FontProperties(fname=font_path)
-font_name = font_prop.get_name()
 
-# Matplotlib 全局字体设置
-plt.rcParams['font.sans-serif'] = [font_name]
-plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+    # Matplotlib 全局字体设置
+    plt.rcParams['font.sans-serif'] = [font_name]
+    plt.rcParams['axes.unicode_minus'] = False
 
-# Seaborn 全局字体设置
-sns.set(font=font_name)  # 确保 Seaborn 使用全局字体
-# 测试 Matplotlib 图表
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [4, 5, 6])
-ax.set_title("Matplotlib 中文标题示例")  # 显式使用全局字体
-plt.show()
+    # Seaborn 全局字体设置
+    sns.set(font=font_name)
 
-# 测试 Seaborn 图表
-df = sns.load_dataset("iris")
-fig, ax = plt.subplots()
-sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
-ax.set_title("Seaborn 中文标题示例")  # 显式使用全局字体
-plt.show()
+    # 测试 Matplotlib 图表
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [4, 5, 6])
+    ax.set_title("Matplotlib 中文标题示例", fontproperties=font_prop)  # 显式使用字体
+    ax.set_xlabel("横轴", fontproperties=font_prop)
+    ax.set_ylabel("纵轴", fontproperties=font_prop)
+    plt.show()
+
+    # 测试 Seaborn 图表
+    df = sns.load_dataset("iris")
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
+    ax.set_title("Seaborn 中文标题示例", fontproperties=font_prop)
+    ax.set_xlabel("横轴", fontproperties=font_prop)
+    ax.set_ylabel("纵轴", fontproperties=font_prop)
+    plt.show()
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
