@@ -16,9 +16,13 @@ import matplotlib
 from matplotlib import rcParams
 import matplotlib.font_manager as fm
 
-fonts = [f.name for f in fm.fontManager.ttflist]
-print("Available fonts:", fonts)
+# 上传字体文件到项目目录，确保路径正确
+font_path = "./SimHei.ttf"  # 或者你的上传字体文件名
+font_prop = font_manager.FontProperties(fname=font_path)
 
+# 全局设置字体
+plt.rcParams['font.sans-serif'] = font_prop.get_name()
+plt.rcParams['axes.unicode_minus'] = False
 # 设置中文字体为 SimHei（黑体）
 matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK SC']
 matplotlib.rcParams['axes.unicode_minus'] = False
