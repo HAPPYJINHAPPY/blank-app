@@ -14,10 +14,10 @@ import random
 import plotly.express as px
 import matplotlib
 from matplotlib import rcParams
-!apt-get update -y
-!apt-get install -y fonts-noto-cjk
-matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK SC']  # 使用 Noto Sans CJK SC
-matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+import subprocess
+# 安装 Noto Sans CJK 字体
+subprocess.run(["apt-get", "update", "-y"], check=True)
+subprocess.run(["apt-get", "install", "-y", "fonts-noto-cjk"], check=True)
 # 设置中文字体为 SimHei（黑体）
 rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
