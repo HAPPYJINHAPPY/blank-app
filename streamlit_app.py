@@ -224,7 +224,7 @@ elif page == "Batch Prediction":
             st.markdown(f"### Top Features: `{important_feature_1}` and `{important_feature_2}`")
 
             # 绘制散点图
-            st.subheader("Scatter Plot of Top Features")
+            st.subheader("散点图Scatter Plot of Top Features")
             plt.figure(figsize=(10, 6))
             sns.scatterplot(
                 data=data,
