@@ -13,8 +13,31 @@ import time
 import random
 import plotly.express as px
 import matplotlib
-from matplotlib import rcParams
-import matplotlib.font_manager as fm
+import streamlit as st
+from matplotlib import rcParams, font_manager
+import os
+
+# 上传字体文件到项目目录，确保路径正确
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
+
+# 检查字体文件是否存在
+if not os.path.exists(font_path):
+    st.error(f"Font file not found: {font_path}")
+else:
+    # 设置字体属性
+    font_prop = font_manager.FontProperties(fname=font_path)
+    font_name = font_prop.get_name()
+    st.write(f"Loaded font: {font_name}")
+
+    # 全局设置字体
+    plt.rcParams['font.sans-serif'] = [font_name]
+    plt.rcParams['axes.unicode_minus'] = False
+
+    # 示例图表
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [4, 5, 6])
+    ax.set_title("中文标题示例", fontproperties=font_prop)  # 显式设置字体
+    st.pyplot(fig)
 
 # 上传字体文件到项目目录，确保路径正确
 font_path = "SourceHanSansCN-Normal.otf"  # 或者你的上传字体文件名
