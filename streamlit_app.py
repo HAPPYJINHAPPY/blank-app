@@ -17,45 +17,36 @@ import streamlit as st
 from matplotlib import rcParams, font_manager
 import os
 
-# 上传字体文件到项目目录，确保路径正确
-font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
-
-# 检查字体文件是否存在
-if not os.path.exists(font_path):
-    st.error(f"Font file not found: {font_path}")
-else:
-    # 设置字体属性
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为字体路径
+try:
     font_prop = font_manager.FontProperties(fname=font_path)
     font_name = font_prop.get_name()
-    st.write(f"Loaded font: {font_name}")
+    print(f"Successfully loaded font: {font_name}")
+except Exception as e:
+    print(f"Error loading font: {e}")
+# 设置字体路径
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为字体路径
+font_prop = font_manager.FontProperties(fname=font_path)
+font_name = font_prop.get_name()
 
-    # 全局设置字体
-    plt.rcParams['font.sans-serif'] = [font_name]
-    plt.rcParams['axes.unicode_minus'] = False
-    matplotlib.rcParams['font.sans-serif'] = [font_name]
-    matplotlib.rcParams['axes.unicode_minus'] = False
+# Matplotlib 全局字体设置
+plt.rcParams['font.sans-serif'] = [font_name]
+plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
-    # 配置 seaborn 也使用全局字体
-    sns.set(font=font_name)
+# Seaborn 全局字体设置
+sns.set(font=font_name)  # 确保 Seaborn 使用全局字体
+# 测试 Matplotlib 图表
+fig, ax = plt.subplots()
+ax.plot([1, 2, 3], [4, 5, 6])
+ax.set_title("Matplotlib 中文标题示例")  # 显式使用全局字体
+plt.show()
 
-    # 示例：Matplotlib 图表
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3], [4, 5, 6])
-    ax.set_title("Matplotlib 中文标题示例")  # 自动继承全局字体
-    st.pyplot(fig)
-
-    # 示例：Seaborn 图表
-    df = sns.load_dataset("iris")
-    fig, ax = plt.subplots()
-    sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
-    ax.set_title("Seaborn 中文标题示例")  # 自动继承全局字体
-    st.pyplot(fig)
-
-    # 示例：Plotly 图表
-    import plotly.express as px
-    fig = px.scatter(df, x="sepal_length", y="sepal_width", color="species", title="Plotly 中文标题示例")
-    fig.update_layout(font=dict(family=font_name, size=16))  # 手动设置字体
-    st.plotly_chart(fig)
+# 测试 Seaborn 图表
+df = sns.load_dataset("iris")
+fig, ax = plt.subplots()
+sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
+ax.set_title("Seaborn 中文标题示例")  # 显式使用全局字体
+plt.show()
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
