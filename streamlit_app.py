@@ -234,7 +234,7 @@ elif page == "Batch Prediction":
                 palette="coolwarm",
                 s=100
             )
-            plt.title(f"{important_feature_1} vs {important_feature_2}")
+            plt.title(f"散点图{important_feature_1} vs {important_feature_2}")
             st.pyplot(plt)
 
             # 散点矩阵（Pairplot）显示主要特征间的关系
