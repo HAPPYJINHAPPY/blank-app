@@ -1,4 +1,3 @@
-import streamlit as st
 import pandas as pd
 import pickle
 from matplotlib import pyplot as plt
@@ -9,14 +8,10 @@ import shap
 import seaborn as sns
 import numpy as np
 import plotly.graph_objects as go
-import time
-import random
 import plotly.express as px
-import matplotlib
 import streamlit as st
 from matplotlib import rcParams, font_manager
 import os
-import urllib.request
 
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
@@ -234,7 +229,7 @@ elif page == "Batch Prediction":
                 palette="coolwarm",
                 s=100
             )
-            plt.title(f"散点图{important_feature_1} vs {important_feature_2}")
+            plt.title(f"散点图{important_feature_1} vs {important_feature_2}", fontproperties=font_prop)
             st.pyplot(plt)
 
             # 散点矩阵（Pairplot）显示主要特征间的关系
@@ -262,7 +257,7 @@ elif page == "Batch Prediction":
                             palette="husl",
                             diag_kind="kde"
                         )
-                        fig.fig.suptitle("主要特征与疲劳预测结果的散点矩阵", y=1.02)
+                        fig.fig.suptitle("主要特征与疲劳预测结果的散点矩阵", y=1.02, fontproperties=font_prop)
                         st.pyplot(fig)
                     except ValueError as e:
                         st.error(f"绘制失败，请检查所选特征和数据的一致性：{e}")
@@ -466,7 +461,7 @@ elif page == "test1":
             # 肩部抬高角度分布对比图（所有天数）
             fig, ax = plt.subplots(figsize=(10, 6))
             sns.boxplot(data=daily_stats, x='Day', y='Shoulder_Raise_Angle', ax=ax)
-            ax.set_title("各天肩部抬高角度分布对比", fontsize=16)
+            ax.set_title("各天肩部抬高角度分布对比", fontsize=16, fontproperties=font_prop)
             ax.set_xlabel("天数", fontsize=12)
             ax.set_ylabel("肩部抬高角度（度）", fontsize=12)
             st.pyplot(fig)
