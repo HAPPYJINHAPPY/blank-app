@@ -32,22 +32,30 @@ else:
     # 全局设置字体
     plt.rcParams['font.sans-serif'] = [font_name]
     plt.rcParams['axes.unicode_minus'] = False
+    matplotlib.rcParams['font.sans-serif'] = [font_name]
+    matplotlib.rcParams['axes.unicode_minus'] = False
 
-    # 示例图表
+    # 配置 seaborn 也使用全局字体
+    sns.set(font=font_name)
+
+    # 示例：Matplotlib 图表
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [4, 5, 6])
-    ax.set_title("中文标题示例", fontproperties=font_prop)  # 显式设置字体
+    ax.set_title("Matplotlib 中文标题示例")  # 自动继承全局字体
     st.pyplot(fig)
 
-# 上传字体文件到项目目录，确保路径正确
-font_path = "SourceHanSansCN-Normal.otf"  # 或者你的上传字体文件名
-font_prop = font_manager.FontProperties(fname=font_path)
+    # 示例：Seaborn 图表
+    df = sns.load_dataset("iris")
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
+    ax.set_title("Seaborn 中文标题示例")  # 自动继承全局字体
+    st.pyplot(fig)
 
-# 全局设置字体
-plt.rcParams['font.sans-serif'] = font_prop.get_name()
-plt.rcParams['axes.unicode_minus'] = False
-rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
-rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+    # 示例：Plotly 图表
+    import plotly.express as px
+    fig = px.scatter(df, x="sepal_length", y="sepal_width", color="species", title="Plotly 中文标题示例")
+    fig.update_layout(font=dict(family=font_name, size=16))  # 手动设置字体
+    st.plotly_chart(fig)
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
