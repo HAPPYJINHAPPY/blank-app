@@ -18,39 +18,26 @@ from matplotlib import rcParams, font_manager
 import os
 import urllib.request
 
-# 下载字体文件
-font_url = "https://github.com/adobe-fonts/source-han-sans/raw/release/OTF/SourceHanSansCN-Normal.otf"
-font_path = "./SourceHanSansCN-Normal.otf"
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
+
+# 检查字体文件是否存在
 if not os.path.exists(font_path):
-    urllib.request.urlretrieve(font_url, font_path)
-    print(f"Downloaded font to {font_path}")
+    st.error(f"Font file not found: {font_path}")
+else:
+    # 设置字体属性
+    font_prop = font_manager.FontProperties(fname=font_path)
+    font_name = font_prop.get_name()
+    st.write(f"Loaded font: {font_name}")
 
-# 加载字体
-font_prop = font_manager.FontProperties(fname=font_path)
-font_name = font_prop.get_name()
-print(f"Successfully loaded font: {font_name}")
+    # 全局设置字体
+    plt.rcParams['font.sans-serif'] = [font_name]
+    plt.rcParams['axes.unicode_minus'] = False
 
-# 设置 Matplotlib 和 Seaborn 字体
-plt.rcParams['font.sans-serif'] = [font_name]
-plt.rcParams['axes.unicode_minus'] = False
-sns.set(font=font_name)
-
-# 测试 Matplotlib 图表
-fig, ax = plt.subplots()
-ax.plot([1, 2, 3], [4, 5, 6])
-ax.set_title("Matplotlib 中文标题示例", fontproperties=font_prop)
-ax.set_xlabel("横轴", fontproperties=font_prop)
-ax.set_ylabel("纵轴", fontproperties=font_prop)
-plt.show()
-
-# 测试 Seaborn 图表
-df = sns.load_dataset("iris")
-fig, ax = plt.subplots()
-sns.scatterplot(data=df, x="sepal_length", y="sepal_width", hue="species", ax=ax)
-ax.set_title("Seaborn 中文标题示例", fontproperties=font_prop)
-ax.set_xlabel("横轴", fontproperties=font_prop)
-ax.set_ylabel("纵轴", fontproperties=font_prop)
-plt.show()
+    # 示例图表
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3], [4, 5, 6])
+    ax.set_title("中文标题示例", fontproperties=font_prop)  # 显式设置字体
+    st.pyplot(fig)
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
