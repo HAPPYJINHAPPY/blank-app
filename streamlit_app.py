@@ -19,6 +19,8 @@ import subprocess
 subprocess.run(["apt-get", "update", "-y"], check=True)
 subprocess.run(["apt-get", "install", "-y", "fonts-noto-cjk"], check=True)
 # 设置中文字体为 SimHei（黑体）
+matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK SC']
+matplotlib.rcParams['axes.unicode_minus'] = False
 rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
