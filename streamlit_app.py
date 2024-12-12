@@ -17,7 +17,7 @@ from matplotlib import rcParams
 def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-local_css("styles.css")
+local_css("style.css")
 # 设置中文字体为 SimHei（黑体）
 rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
