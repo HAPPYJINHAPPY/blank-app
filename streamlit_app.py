@@ -14,6 +14,11 @@ import random
 import plotly.express as px
 import matplotlib
 from matplotlib import rcParams
+import matplotlib.font_manager as fm
+
+fonts = [f.name for f in fm.fontManager.ttflist]
+print("Available fonts:", fonts)
+
 # 设置中文字体为 SimHei（黑体）
 matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK SC']
 matplotlib.rcParams['axes.unicode_minus'] = False
