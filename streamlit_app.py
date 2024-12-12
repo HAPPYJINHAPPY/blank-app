@@ -17,9 +17,9 @@ from matplotlib import rcParams
 # 设置中文字体为 SimHei（黑体）
 rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体
-plt.rcParams['axes.unicode_minus'] = False    # 解决保存图像是负号'-'显示为方块的问题
+mpl.font_manager.fontManager.addfont('字体/SimHei.ttf') #临时注册新的全局字体
+plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
+plt.rcParams['axes.unicode_minus']=False#用来正常显示负号
 # 配置 Matplotlib 使用中文字体
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 使用微软雅黑字体
 matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
