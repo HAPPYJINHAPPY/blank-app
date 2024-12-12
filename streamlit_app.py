@@ -17,7 +17,7 @@ from matplotlib import rcParams
 import matplotlib.font_manager as fm
 
 # 上传字体文件到项目目录，确保路径正确
-font_path = "./SimHei.ttf"  # 或者你的上传字体文件名
+font_path = "SourceHanSansCN-Normal.otf"  # 或者你的上传字体文件名
 font_prop = font_manager.FontProperties(fname=font_path)
 
 # 全局设置字体
