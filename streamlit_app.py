@@ -23,13 +23,8 @@ font_prop = font_manager.FontProperties(fname=font_path)
 # 全局设置字体
 plt.rcParams['font.sans-serif'] = font_prop.get_name()
 plt.rcParams['axes.unicode_minus'] = False
-# 设置中文字体为 SimHei（黑体）
-matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK SC']
-matplotlib.rcParams['axes.unicode_minus'] = False
 rcParams['font.sans-serif'] = ['SimHei']  # 或者 ['Microsoft YaHei']，根据系统支持选择
 rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
-plt.rcParams['font.sans-serif']=['SimHei'] #用来正常显示中文标签
-plt.rcParams['axes.unicode_minus']=False#用来正常显示负号
 # Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data.csv'
 data = pd.read_csv(file_path)
