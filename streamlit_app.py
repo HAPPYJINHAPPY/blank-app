@@ -110,6 +110,10 @@ page = st.sidebar.radio("Choose Page", ["Single Prediction", "Batch Prediction",
 if page == "Single Prediction":
     st.title("Single Prediction")
 
+    # 初始化存储所有预测记录的列表
+    if 'predictions' not in st.session_state:
+        st.session_state.predictions = []
+
     # Two-column layout for sliders
     col1, col2 = st.columns(2)
 
@@ -147,21 +151,35 @@ if page == "Single Prediction":
     st.subheader("Input Parameters")
     st.write(input_data)
 
+    # 点击预测按钮时进行预测并保存记录
     if st.button("Predict"):
+        # 进行预测
         prediction = model.predict(input_data)
-        st.success(f"Prediction: {'Fatigued' if prediction[0] == 1 else 'Not Fatigued'}")
+        result = "Fatigued" if prediction[0] == 1 else "Not Fatigued"
+        st.success(f"Prediction: {result}")
 
+        # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
+        record = input_data.copy()
+        record["Prediction"] = result
+        st.session_state.predictions.append(record)
+
+        # SHAP分析
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(input_data)
 
         st.subheader("Feature Contribution Analysis")
-
         if isinstance(shap_values, list) and len(shap_values) > 1:
             st.write("SHAP values for Class 1")
             fig, ax = plt.subplots()
             shap.summary_plot(shap_values[1], input_data, plot_type="bar", show=False)
             st.pyplot(fig)
 
+    # 显示所有保存的预测记录
+    if st.session_state.predictions:
+        st.subheader("All Prediction Records")
+        # 将所有记录合并成一个大DataFrame
+        prediction_df = pd.concat(st.session_state.predictions, ignore_index=True)
+        st.write(prediction_df)
     if st.button("Generate Radar Chart"):
         def plot_radar_chart(features, values, title="Radar Chart"):
             num_vars = len(features)
