@@ -413,11 +413,14 @@ elif page == "test1":
     st.title("疲劳分数监测与警报系统")
 
     # 上传文件功能
-    uploaded_file = st.file_uploader("上传数据文件 (CSV格式)", type=["csv"])
-
+    uploaded_file = st.file_uploader("上传数据文件 (CSV格式)", type=["csv", "xlsx"])
+# 读取上传的文件并处理
     if uploaded_file:
-        # 读取上传的 CSV 文件
-        daily_stats = pd.read_csv(uploaded_file)
+        # 根据上传的文件类型读取数据
+        if uploaded_file.name.endswith("csv"):
+            daily_stats = pd.read_csv(uploaded_file)
+        else:
+            daily_stats = pd.read_excel(uploaded_file)
 
         # 确保数据包含必要的列
         required_columns = {'Day', 'Neck_Angle', 'Shoulder_Raise_Angle'}
