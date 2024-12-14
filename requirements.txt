@@ -7,4 +7,3 @@ seaborn
 numpy
 plotly
 pillow
-io
