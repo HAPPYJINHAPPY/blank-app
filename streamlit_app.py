@@ -320,7 +320,7 @@ elif page == "test":
                     df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode('ISO-8859-1')))
             else:
                 # 读取Excel文件
-                df = pd.read_excel(uploaded_file)
+                df = pd.read_excel(uploaded_file,engine='openpyxl')
 
             # 显示数据表
             st.write("数据预览：")
