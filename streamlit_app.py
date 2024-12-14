@@ -12,6 +12,7 @@ import plotly.express as px
 import streamlit as st
 from matplotlib import rcParams, font_manager
 import os
+import io
 
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
@@ -305,20 +306,29 @@ elif page == "test":
     # 页面标题
     st.title("自定义数据可视化仪表板")
 
-    # 上传文件功能
+        # 上传文件功能
     uploaded_file = st.file_uploader("上传数据文件", type=["csv", "xlsx"])
 
     # 读取上传的文件并处理
     if uploaded_file:
-        # 根据上传的文件类型读取数据
-        if uploaded_file.name.endswith("csv"):
-            df = pd.read_csv(uploaded_file)
-        else:
-            df = pd.read_excel(uploaded_file)
+        try:
+            if uploaded_file.name.endswith("csv"):
+                # 尝试读取CSV文件，指定常见编码格式
+                try:
+                    df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode('utf-8')))
+                except UnicodeDecodeError:
+                    df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode('ISO-8859-1')))
+            else:
+                # 读取Excel文件
+                df = pd.read_excel(uploaded_file)
 
-        # 显示上传的数据（仅显示前几行）
-        st.write("数据预览：")
-        st.write(df.head())
+            # 显示数据表
+            st.write("数据预览：")
+            st.write(df.head())
+
+        except Exception as e:
+            # 捕获任何读取错误并提示用户
+            st.error(f"文件读取失败: {e}")
 
         # 获取文件的列名
         columns = df.columns.tolist()
