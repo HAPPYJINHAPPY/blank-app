@@ -198,6 +198,7 @@ if page == "疲劳评估":
             ax.set_xticks(angles[:-1])
             ax.set_xticklabels(features, fontsize=10)
             ax.set_title(title, fontsize=14, pad=20)
+            set_font_properties(ax, font_prop)
             return fig
 
         radar_fig = plot_radar_chart(input_data.columns.tolist(), input_data.iloc[0].values.tolist())
