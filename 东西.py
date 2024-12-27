@@ -106,12 +106,10 @@ page = st.sidebar.radio("选择页面", ["疲劳评估", "批量评估","分析�
 
 # Single prediction page
 if page == "疲劳评估":
-    st.title("疲劳评估")
-
     # 初始化存储所有预测记录的列表
     if 'predictions' not in st.session_state:
         st.session_state.predictions = []
-
+    st.subheader("角度参数")
     # Two-column layout for sliders
     col1, col2 = st.columns(2)
 
@@ -128,7 +126,7 @@ if page == "疲劳评估":
         back_flexion = st.slider("背部屈曲范围", 0, 90, 20)
 
     # Task parameters
-    st.subheader("持续时间")
+    st.subheader("时间参数")
     task_duration = st.number_input("持续时间（秒）", min_value=0, value=6)
     movement_frequency = st.number_input("重复频率（每分钟）", min_value=0, value=5)
 
@@ -145,7 +143,7 @@ if page == "疲劳评估":
         "持续时间": [task_duration],
         "重复频率": [movement_frequency],
     })
-    st.subheader("输入参数")
+    st.subheader("参数信息")
     st.write(input_data)
 
     # 点击预测按钮时进行预测并保存记录
