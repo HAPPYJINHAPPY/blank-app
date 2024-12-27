@@ -257,6 +257,7 @@ elif page == "批量评估":
                 s=100
             )
             plt.title(f"散点图{important_feature_1} vs {important_feature_2}", fontproperties=font_prop)
+            set_font_properties(ax, font_prop)
             st.pyplot(plt)
 
             # 散点矩阵（Pairplot）显示主要特征间的关系
@@ -293,6 +294,7 @@ elif page == "批量评估":
             fig, ax = plt.subplots(figsize=(10, 8))
             correlation_matrix = data.corr()
             sns.heatmap(correlation_matrix, annot=True, cmap="coolwarm", ax=ax)
+            set_font_properties(ax, font_prop)
             st.pyplot(fig)
 
             # 提供下载按钮
