@@ -225,7 +225,7 @@ elif page == "批量评估":
         if len(X.columns) == expected_features:
             predictions = model.predict(X)
             data['疲劳值'] = predictions
-            st.subheader("评估")
+            st.subheader("评估结果")
             st.write(data)
 
             # 特征重要性
