@@ -14,7 +14,7 @@ from matplotlib import font_manager
 import os
 import io
 
-font_path = "C:/Users/X2006936/Downloads/SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
+font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
 # 检查字体文件是否存在
 if not os.path.exists(font_path):
@@ -37,7 +37,7 @@ else:
     plt.rcParams['axes.unicode_minus'] = False
 
 # Load the uploaded file
-file_path = 'C:/Users/X2006936/fatigue_dashboard/corrected_fatigue_simulation_data.csv'
+file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
 data = pd.read_csv(file_path, encoding='gbk')
 
 # 1. Features and labels
