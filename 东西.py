@@ -127,7 +127,10 @@ if page == "疲劳评估":
 
     # Task parameters
     st.subheader("时间参数")
+    col3, col4 = st.columns(2)
+    with col3:
     task_duration = st.number_input("持续时间（秒）", min_value=0, value=6)
+    with col4:
     movement_frequency = st.number_input("重复频率（每分钟）", min_value=0, value=5)
 
     # Input data aggregation
