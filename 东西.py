@@ -169,17 +169,23 @@ if page == "疲劳评估":
         record["评估"] = result
         st.session_state.predictions.append(record)
 
-        # 假设已经训练了一个模型，并且有 input_data
+     # 计算SHAP值
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(input_data)
-        
+    
+        # 显示SHAP特征贡献分析
         st.subheader("特征贡献分析")
+    
         if isinstance(shap_values, list) and len(shap_values) > 1:
             st.write("SHAP values for Class 1")
             
-            # 绘制SHAP值图（不需要手动创建fig和ax）
-            shap.summary_plot(shap_values[1], input_data, plot_type="bar")
-
+            # SHAP summary plot
+            fig, ax = plt.subplots()
+            shap.summary_plot(shap_values[1], input_data, plot_type="bar", show=False)
+            st.pyplot(fig)  # 显示图形
+    
+        else:
+            st.write("没有足够的SHAP值数据可用。")
     # 显示所有保存的预测记录
     if st.session_state.predictions:
         st.subheader("所有评估记录")
