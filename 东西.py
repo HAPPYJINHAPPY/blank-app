@@ -257,7 +257,8 @@ elif page == "批量评估":
                 s=100
             )
             plt.title(f"散点图{important_feature_1} vs {important_feature_2}", fontproperties=font_prop)
-            set_font_properties(ax, font_prop)
+            plt.xlabel(important_feature_1, fontproperties=font_prop)
+            plt.ylabel(important_feature_2, fontproperties=font_prop)
             st.pyplot(plt)
 
             # 散点矩阵（Pairplot）显示主要特征间的关系
@@ -286,7 +287,9 @@ elif page == "批量评估":
                             diag_kind="kde"
                         )
                         fig.fig.suptitle("主要特征与疲劳预测结果的散点矩阵", y=1.02, fontproperties=font_prop)
-                        set_font_properties(ax, font_prop)
+                        for ax in fig.axes.flatten():
+                            set_font_properties(ax, font_prop)
+                        
                         st.pyplot(fig)
                     except ValueError as e:
                         st.error(f"绘制失败，请检查所选特征和数据的一致性：{e}")
