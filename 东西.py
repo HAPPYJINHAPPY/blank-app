@@ -286,6 +286,7 @@ elif page == "批量评估":
                             diag_kind="kde"
                         )
                         fig.fig.suptitle("主要特征与疲劳预测结果的散点矩阵", y=1.02, fontproperties=font_prop)
+                        set_font_properties(ax, font_prop)
                         st.pyplot(fig)
                     except ValueError as e:
                         st.error(f"绘制失败，请检查所选特征和数据的一致性：{e}")
