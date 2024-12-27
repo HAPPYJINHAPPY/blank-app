@@ -311,7 +311,7 @@ elif page == "批量评估":
         else:
             st.error(
                 f"Feature mismatch: Model expects {expected_features} features, but the uploaded file contains {len(X.columns)}.")
-elif page == "可视化":
+elif page == "分析可视化":
 
     # 页面标题
     st.title("自定义数据可视化仪表板")
