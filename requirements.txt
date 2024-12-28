@@ -1,5 +1,5 @@
 streamlit
-git+https://github.com/volcengine/volcengine-python-sdk.git
+./volcengine_python_sdk-1.0.118-py3-none-any.whl
 pandas
 scikit-learn
 matplotlib
