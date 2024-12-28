@@ -149,20 +149,77 @@ if page == "疲劳评估":
     st.subheader("参数信息")
     st.write(input_data)
 
-    # 点击预测按钮时进行预测并保存记录
+        # 评估按钮
+    result = None  # 确保变量 result 初始化
     if st.button("评估"):
-        # 进行预测
-        prediction = model.predict(input_data)
-        if prediction[0] == 0:
-            result = "低疲劳状态"
-        elif prediction[0] == 1:
-            result = "中疲劳状态"
-        elif prediction[0] == 2:
-            result = "高疲劳状态"
-        else:
-            result = "未知状态"  # 如果值不在 0, 1, 2 中，返回“未知状态”
+        with st.spinner("正在评估，请稍等..."):
+            # 模型预测
+            prediction = model.predict(input_data)
+            result = ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
+            st.success(f"评估结果：{result}")
 
-        st.success(f"评估结果为: {result}")
+            # 保存评估记录
+            record = input_data.copy()
+            record["评估"] = result
+            if 'predictions' not in st.session_state:
+                st.session_state.predictions = []
+            st.session_state.predictions.append(record)
+
+    # 右侧空白区域扩展为 AI 分析助手
+    if result is not None:
+        # 创建一个额外的右侧布局
+        with st.container():
+            st.subheader("AI 智能评估助手")
+            if "messages" not in st.session_state:
+                st.session_state.messages = [
+                    {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"}]
+
+            # AI 输入构造
+            ai_input = f"用户的疲劳状态是：{result}。\n" \
+                       f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
+                       f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
+                       f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
+                       f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
+                       f"请基于这些数据给出用户的潜在人因危害分析及改善建议。"
+
+            st.session_state.messages.append({"role": "user", "content": ai_input})
+
+            # 显示现有聊天记录
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+    
+                def call_ark_api(messages):
+                    try:
+                        ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+                        completion = client.chat.completions.create(
+                            model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
+                            messages=ark_messages,
+                            stream=True
+                        )
+
+                        response = ""
+                        for chunk in completion:
+                            delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta,
+                                                                                      "content") else ""
+                            yield delta_content
+                    except Exception as e:
+                        st.error(f"调用 Ark API 时出错：{e}")
+                        yield f"Error: {e}"
+
+
+                # 创建占位符显示机器人回答
+                response_placeholder = st.empty()
+                response = ""
+                for partial_response in call_ark_api(st.session_state.messages):
+                    response += partial_response
+                    response_placeholder.markdown(response)
+
+                # 将 AI 回复保存到会话状态
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            else:
+                st.warning("请先点击评估按钮生成结果后再查看分析。")
 
         # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
         record = input_data.copy()
