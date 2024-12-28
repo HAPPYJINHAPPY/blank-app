@@ -1,4 +1,5 @@
 streamlit
+git+https://github.com/volcengine/volcengine-python-sdk.git
 pandas
 scikit-learn
 matplotlib
@@ -8,4 +9,3 @@ numpy
 plotly
 pillow
 openpyxl>=3.0.0
-git+https://github.com/volcengine/volcengine-python-sdk.git
