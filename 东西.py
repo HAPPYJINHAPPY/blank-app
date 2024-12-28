@@ -154,7 +154,12 @@ if page == "疲劳评估":
     })
     st.subheader("参数信息")
     st.write(input_data)
-
+# 创建 Ark 客户端
+    API_KEY = st.text_input("请输入 OpenAI API 密钥", type="password")
+    if not API_KEY:
+        st.info("请输入 OpenAI API 密钥以继续。", icon="🗝️")
+    else:
+        client = Ark(api_key=API_KEY)
     # 评估按钮
     result = None  # 确保变量 result 初始化
     if st.button("评估"):
