@@ -154,13 +154,16 @@ if page == "疲劳评估":
     })
     st.subheader("参数信息")
     st.write(input_data)
-# 创建 Ark 客户端
-    API_KEY = st.text_input("请输入 OpenAI API 密钥", type="password")
-    if not API_KEY:
-        st.info("请输入 OpenAI API 密钥以继续。", icon="🗝️")
-    else:
-        client = Ark(api_key=API_KEY)
-        # 初始化会话状态
+
+# 输入 API 密钥
+API_KEY = st.text_input("请输入 OpenAI API 密钥", type="password")
+if not API_KEY:
+    st.info("请输入 OpenAI API 密钥以继续。", icon="🗝️")
+else:
+    # 初始化 Ark 客户端
+    client = Ark(api_key=API_KEY)
+
+    # 初始化会话状态
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "predictions" not in st.session_state:
@@ -173,12 +176,11 @@ if page == "疲劳评估":
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
 
-
-    # 评估按钮
+    # 评估按钮逻辑
     result = None
     if st.button("评估"):
         with st.spinner("正在评估，请稍等..."):
-            # 模型预测
+            # 模型预测逻辑（假设有一个预测模型函数）
             prediction = model.predict(input_data)
             result = ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
             st.success(f"评估结果：{result}")
@@ -188,7 +190,7 @@ if page == "疲劳评估":
             record["评估"] = result
             st.session_state.predictions.append(record)
 
-            # 自动分析的 AI 输入构造
+            # AI 输入构造
             ai_input = f"用户的疲劳状态是：{result}。\n" \
                        f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
                        f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
@@ -198,7 +200,6 @@ if page == "疲劳评估":
 
             # 将分析消息添加到聊天记录中
             st.session_state.messages.append({"role": "user", "content": ai_input})
-
 
             # 调用 Ark API 进行自动分析
             def call_ark_api(messages):
@@ -212,13 +213,11 @@ if page == "疲劳评估":
 
                     response = ""
                     for chunk in completion:
-                        delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta,
-                                                                                  "content") else ""
+                        delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, "content") else ""
                         yield delta_content
                 except Exception as e:
                     st.error(f"调用 Ark API 时出错：{e}")
                     yield f"Error: {e}"
-
 
             # 创建占位符显示助手的回答
             response_placeholder = st.empty()
@@ -239,7 +238,6 @@ if page == "疲劳评估":
         # 仅在用户输入新问题时，将新问题追加到现有聊天记录中，而不清空聊天记录
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-
         # 调用 Ark API 获取回答
         def call_ark_api_for_question(messages):
             try:
@@ -257,7 +255,6 @@ if page == "疲劳评估":
             except Exception as e:
                 st.error(f"调用 Ark API 时出错：{e}")
                 yield f"Error: {e}"
-
 
         # 创建占位符来显示助手的回答
         response_placeholder = st.empty()
