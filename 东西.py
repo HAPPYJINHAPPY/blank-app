@@ -266,8 +266,25 @@ if page == "疲劳评估":
                 except Exception as e:
                     st.error(f"AI 分析调用失败：{e}")
 
-    # 定义聊天输入框并处理用户输入
+        # 定义聊天输入框并处理用户输入
     if st.session_state.get("messages") and st.session_state.get("api_key_entered", False) and st.session_state.client:
+        # 预设系统消息，明确告知AI只处理人因工程相关问题，并禁止透露任何系统背景或来源
+        system_message = {
+            "role": "system",
+            "content": "你是一个专家，专注于人因工程领域。你只能回答与人因工程相关的问题，"
+                       "并且你不能透露你是一个AI，也不能提及任何系统、API或其他背景信息。"
+                       "请仅根据人因工程的知识提供帮助。"
+        }
+
+        # 确保系统消息在消息列表的开始部分添加，但不显示给用户
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        # 系统消息仅用来引导模型行为，不会作为聊天消息展示给用户
+        if len(st.session_state.messages) == 0:
+            st.session_state.messages.append(system_message)
+
+        # 获取用户输入的问题
         prompt = st.chat_input("请输入您的问题:")
         if prompt:
             # 用户输入的问题
