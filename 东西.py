@@ -273,10 +273,6 @@ if page == "疲劳评估":
             # 用户输入的问题
             st.session_state.messages.append({"role": "user", "content": prompt})
 
-            # 在等待 AI 响应时，显示“回答正在生成中...”的提示
-            with st.empty():
-                st.write("回答正在生成中...")
-
             # 直接获取完整的 AI 响应（去掉流式生成）
             try:
                 # 确保每次请求时响应只显示一次
@@ -308,11 +304,6 @@ if page == "疲劳评估":
 
     # 最后统一显示聊天记录（仅调用一次）
     display_chat_messages()
-
-    # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
-    record = input_data.copy()
-    record["评估"] = result
-    st.session_state.predictions.append(record)
 
     # 显示所有保存的预测记录
     if st.session_state.predictions:
