@@ -130,7 +130,6 @@ if page == "疲劳评估":
         wrist_extension = st.slider("手腕背伸", 0, 90, 15)
         wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 45, 10)
         back_flexion = st.slider("背部屈曲范围", 0, 90, 20)
-
     # Task parameters
     st.subheader("时间参数")
     col3, col4 = st.columns(2)
@@ -139,7 +138,42 @@ if page == "疲劳评估":
     with col4:
         movement_frequency = st.number_input("重复频率（每分钟）", min_value=0, value=5)
 
-    # Input data aggregation
+    # 初始化会话状态
+    if "show_ai_analysis" not in st.session_state:
+        st.session_state.show_ai_analysis = False
+    if "api_key_entered" not in st.session_state:
+        st.session_state.api_key_entered = False
+    if "API_KEY" not in st.session_state:
+        st.session_state.API_KEY = None
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if 'client' not in st.session_state:
+        st.session_state.client = None
+
+        # 定义疲劳评估函数
+    def fatigue_prediction(input_data):
+        prediction = model.predict(input_data)
+        return ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
+
+
+    # 定义聊天调用函数
+    def call_ark_api(client, messages):
+        try:
+            ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+            completion = client.chat.completions.create(
+                model="ep-20241226165134-6lpqj",
+                messages=ark_messages,
+                stream=True
+            )
+            response = ""
+            for chunk in completion:
+                delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, "content") else ""
+                yield delta_content
+        except Exception as e:
+            st.error(f"调用 Ark API 时出错：{e}")
+            yield f"Error: {e}"
+
+    # 输入数据表格
     input_data = pd.DataFrame({
         "颈部前屈": [neck_flexion],
         "颈部后仰": [neck_extension],
@@ -152,144 +186,134 @@ if page == "疲劳评估":
         "持续时间": [task_duration],
         "重复频率": [movement_frequency],
     })
-    st.subheader("参数信息")
+    st.subheader("输入参数")
     st.write(input_data)
 
-# 输入 API 密钥
-API_KEY = st.text_input("请输入 OpenAI API 密钥", type="password")
-if not API_KEY:
-    st.info("请输入 OpenAI API 密钥以继续。", icon="🗝️")
-else:
-    # 初始化 Ark 客户端
-    client = Ark(api_key=API_KEY)
-
-    # 初始化会话状态
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    if "predictions" not in st.session_state:
-        st.session_state.predictions = []
-
-    def display_chat_messages():
-        """显示聊天记录"""
-        if st.session_state.messages:
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
-
-    # 评估按钮逻辑
-    result = None
+    # 疲劳评估按钮
     if st.button("评估"):
         with st.spinner("正在评估，请稍等..."):
-            # 模型预测逻辑（假设有一个预测模型函数）
-            prediction = model.predict(input_data)
-            result = ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
+            # 假设 input_data 已经被定义并包含所有必要的数据
+            # 请确保 fatigue_prediction 函数已定义
+            result = fatigue_prediction(input_data)
             st.success(f"评估结果：{result}")
 
-            # 保存评估记录
+            # 保存评估结果到会话状态
+            st.session_state.result = result
             record = input_data.copy()
             record["评估"] = result
             st.session_state.predictions.append(record)
 
-            # AI 输入构造
-            ai_input = f"用户的疲劳状态是：{result}。\n" \
-                       f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
-                       f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
-                       f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
-                       f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
-                       f"请基于这些数据给出用户的潜在人因危害分析及改善建议。"
+            # 重置 AI 分析相关的会话状态
+            st.session_state.ai_analysis_result = None
+            st.session_state.messages = []
+            st.session_state.show_ai_analysis = True
+            st.session_state.api_key_entered = False
+            if 'API_KEY' in st.session_state:
+                del st.session_state.API_KEY
+            if 'client' in st.session_state:
+                del st.session_state.client  # 删除旧的 Ark 客户端
 
-            # 将分析消息添加到聊天记录中
-            st.session_state.messages.append({"role": "user", "content": ai_input})
+    # 显示 AI 分析输入
+    if st.session_state.show_ai_analysis:
+        st.subheader("AI 分析")
+        st.info("请输入 API 密钥以继续生成潜在人因危害分析及改善建议：")
 
-            # 调用 Ark API 进行自动分析
-            def call_ark_api(messages):
-                try:
-                    ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
-                    completion = client.chat.completions.create(
-                        model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
-                        messages=ark_messages,
-                        stream=True  # 流式响应
-                    )
-
-                    response = ""
-                    for chunk in completion:
-                        delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, "content") else ""
-                        yield delta_content
-                except Exception as e:
-                    st.error(f"调用 Ark API 时出错：{e}")
-                    yield f"Error: {e}"
-
-            # 创建占位符显示助手的回答
-            response_placeholder = st.empty()
-            response = ""  # 初始化完整响应
-
-            # 仅使用流式响应更新聊天记录
-            for partial_response in call_ark_api(st.session_state.messages):
-                response += partial_response
-                response_placeholder.markdown(response)  # 更新占位符内容
-
-            # 只将流式生成的完整响应添加到聊天记录
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
-        display_chat_messages()
-
-    # 用户输入问题并获取答案
-    if prompt := st.chat_input("请输入您的问题:"):
-        # 仅在用户输入新问题时，将新问题追加到现有聊天记录中，而不清空聊天记录
-        st.session_state.messages.append({"role": "user", "content": prompt})
-
-        # 调用 Ark API 获取回答
-        def call_ark_api_for_question(messages):
+        API_KEY = st.text_input("请输入 API 密钥", type="password")
+        if API_KEY:
+            st.session_state.API_KEY = API_KEY
+            st.session_state.api_key_entered = True
+            # 初始化 Ark 客户端并存储在会话状态中
             try:
-                ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
-                completion = client.chat.completions.create(
-                    model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
-                    messages=ark_messages,
-                    stream=True  # 流式响应
-                )
-
-                response = ""
-                for chunk in completion:
-                    delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, "content") else ""
-                    yield delta_content
+                st.session_state.client = Ark(api_key=API_KEY)  # 请确保 Ark 客户端正确初始化
             except Exception as e:
-                st.error(f"调用 Ark API 时出错：{e}")
-                yield f"Error: {e}"
+                st.error(f"初始化 Ark 客户端时出错：{e}")
 
-        # 创建占位符来显示助手的回答
-        response_placeholder = st.empty()
-        response = ""
-        for partial_response in call_ark_api_for_question(st.session_state.messages):
-            response += partial_response
-            response_placeholder.markdown(response)
-
-        # 将助手的完整回答保存到会话状态
-        st.session_state.messages.append({"role": "assistant", "content": response})
-
-        display_chat_messages()
-
-        # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
-        record = input_data.copy()
-        record["评估"] = result
-        st.session_state.predictions.append(record)
-
-        # 计算SHAP值
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(input_data)
-
-        # 显示SHAP特征贡献分析
-        st.subheader("特征贡献分析")
-
-        if isinstance(shap_values, list) and len(shap_values) > 1:
-            st.write("SHAP values for Class 1")
-
-            # SHAP summary plot
-            fig, ax = plt.subplots()
-            shap.summary_plot(shap_values[1], input_data, plot_type="bar", show=False)
-            st.pyplot(fig)  # 显示图形
-
+    # AI 分析逻辑
+    if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
+        # 检查疲劳评估结果是否存在
+        if "result" not in st.session_state:
+            st.warning("请先点击“评估”按钮进行疲劳评估！")
         else:
-            st.write("没有足够的SHAP值数据可用。")
+            if st.session_state.ai_analysis_result is None:
+                try:
+                    # 构造 AI 输入
+                    ai_input = f"用户的疲劳状态是：{st.session_state.result}。\n" \
+                               f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
+                               f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
+                               f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
+                               f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
+                               f"请基于这些数据给出用户的潜在人因危害分析及改善建议。"
+
+                    st.session_state.messages = [
+                        {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"},
+                        {"role": "user", "content": ai_input}
+                    ]
+
+                    with st.spinner("正在进行 AI 分析，请稍等..."):
+                        response = ""
+                        for partial_response in call_ark_api(st.session_state.client, st.session_state.messages):
+                            if "Error" in partial_response:
+                                st.error(partial_response)
+                                break
+                            response += partial_response
+
+                        if response:
+                            st.session_state.ai_analysis_result = response
+                            st.session_state.messages.append({"role": "assistant", "content": response})
+                        else:
+                            st.error("AI 分析返回空结果，请稍后重试。")
+
+                except Exception as e:
+                    st.error(f"AI 分析调用失败：{e}")
+
+    # 定义聊天输入框并处理用户输入
+    if st.session_state.get("messages") and st.session_state.get("api_key_entered", False) and st.session_state.client:
+        prompt = st.chat_input("请输入您的问题:")
+        if prompt:
+            # 用户输入的问题
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
+            # 在等待 AI 响应时，显示“回答正在生成中...”的提示
+            with st.empty():
+                st.write("回答正在生成中...")
+
+            # 直接获取完整的 AI 响应（去掉流式生成）
+            try:
+                # 确保每次请求时响应只显示一次
+                response = ""
+                for partial_response in call_ark_api(st.session_state.client, st.session_state.messages):
+                    if "Error" in partial_response:
+                        st.error(partial_response)
+                        break
+                    response += partial_response  # 收集完整的响应
+
+                # 将完整的响应展示给用户
+                if response:
+                    # 只有当响应不为空时，才将其添加到会话并显示
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+
+            except Exception as e:
+                st.error(f"生成响应时出错：{e}")
+
+
+    # 显示聊天记录
+    def display_chat_messages():
+        """显示聊天记录"""
+        if st.session_state.get("messages"):
+            # 在此处一次性渲染所有聊天记录，从最早的消息开始显示
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+
+    # 最后统一显示聊天记录（仅调用一次）
+    display_chat_messages()
+
+    # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
+    record = input_data.copy()
+    record["评估"] = result
+    st.session_state.predictions.append(record)
+
     # 显示所有保存的预测记录
     if st.session_state.predictions:
         st.subheader("所有评估记录")
