@@ -160,8 +160,22 @@ if page == "疲劳评估":
         st.info("请输入 OpenAI API 密钥以继续。", icon="🗝️")
     else:
         client = Ark(api_key=API_KEY)
+        # 初始化会话状态
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    if "predictions" not in st.session_state:
+        st.session_state.predictions = []
+
+    def display_chat_messages():
+        """显示聊天记录"""
+        if st.session_state.messages:
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+
+
     # 评估按钮
-    result = None  # 确保变量 result 初始化
+    result = None
     if st.button("评估"):
         with st.spinner("正在评估，请稍等..."):
             # 模型预测
@@ -172,20 +186,9 @@ if page == "疲劳评估":
             # 保存评估记录
             record = input_data.copy()
             record["评估"] = result
-            if 'predictions' not in st.session_state:
-                st.session_state.predictions = []
             st.session_state.predictions.append(record)
 
-    # 右侧空白区域扩展为 AI 分析助手
-    if result is not None:
-        # 创建一个额外的右侧布局
-        with st.container():
-            st.subheader("AI 智能评估助手")
-            if "messages" not in st.session_state:
-                st.session_state.messages = [
-                    {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"}]
-
-            # AI 输入构造
+            # 自动分析的 AI 输入构造
             ai_input = f"用户的疲劳状态是：{result}。\n" \
                        f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
                        f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
@@ -193,44 +196,80 @@ if page == "疲劳评估":
                        f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
                        f"请基于这些数据给出用户的潜在人因危害分析及改善建议。"
 
+            # 将分析消息添加到聊天记录中
             st.session_state.messages.append({"role": "user", "content": ai_input})
 
-            # 显示现有聊天记录
-            for message in st.session_state.messages:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
+
+            # 调用 Ark API 进行自动分析
+            def call_ark_api(messages):
+                try:
+                    ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+                    completion = client.chat.completions.create(
+                        model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
+                        messages=ark_messages,
+                        stream=True  # 流式响应
+                    )
+
+                    response = ""
+                    for chunk in completion:
+                        delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta,
+                                                                                  "content") else ""
+                        yield delta_content
+                except Exception as e:
+                    st.error(f"调用 Ark API 时出错：{e}")
+                    yield f"Error: {e}"
 
 
-                def call_ark_api(messages):
-                    try:
-                        ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
-                        completion = client.chat.completions.create(
-                            model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
-                            messages=ark_messages,
-                            stream=True
-                        )
+            # 创建占位符显示助手的回答
+            response_placeholder = st.empty()
+            response = ""  # 初始化完整响应
 
-                        response = ""
-                        for chunk in completion:
-                            delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta,
-                                                                                      "content") else ""
-                            yield delta_content
-                    except Exception as e:
-                        st.error(f"调用 Ark API 时出错：{e}")
-                        yield f"Error: {e}"
+            # 仅使用流式响应更新聊天记录
+            for partial_response in call_ark_api(st.session_state.messages):
+                response += partial_response
+                response_placeholder.markdown(response)  # 更新占位符内容
+
+            # 只将流式生成的完整响应添加到聊天记录
+            st.session_state.messages.append({"role": "assistant", "content": response})
+
+        display_chat_messages()
+
+    # 用户输入问题并获取答案
+    if prompt := st.chat_input("请输入您的问题:"):
+        # 仅在用户输入新问题时，将新问题追加到现有聊天记录中，而不清空聊天记录
+        st.session_state.messages.append({"role": "user", "content": prompt})
 
 
-                # 创建占位符显示机器人回答
-                response_placeholder = st.empty()
+        # 调用 Ark API 获取回答
+        def call_ark_api_for_question(messages):
+            try:
+                ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+                completion = client.chat.completions.create(
+                    model="ep-20241226165134-6lpqj",  # 使用正确的 Ark 模型ID
+                    messages=ark_messages,
+                    stream=True  # 流式响应
+                )
+
                 response = ""
-                for partial_response in call_ark_api(st.session_state.messages):
-                    response += partial_response
-                    response_placeholder.markdown(response)
+                for chunk in completion:
+                    delta_content = chunk.choices[0].delta.content if hasattr(chunk.choices[0].delta, "content") else ""
+                    yield delta_content
+            except Exception as e:
+                st.error(f"调用 Ark API 时出错：{e}")
+                yield f"Error: {e}"
 
-                # 将 AI 回复保存到会话状态
-                st.session_state.messages.append({"role": "assistant", "content": response})
-            else:
-                st.warning("请先点击评估按钮生成结果后再查看分析。")
+
+        # 创建占位符来显示助手的回答
+        response_placeholder = st.empty()
+        response = ""
+        for partial_response in call_ark_api_for_question(st.session_state.messages):
+            response += partial_response
+            response_placeholder.markdown(response)
+
+        # 将助手的完整回答保存到会话状态
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+        display_chat_messages()
 
         # 将当前记录（包括输入数据和预测结果）添加到 session_state 中
         record = input_data.copy()
