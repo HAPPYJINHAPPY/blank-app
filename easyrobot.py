@@ -178,7 +178,7 @@ input_data = pd.DataFrame({
     "持续时间": [task_duration],
     "重复频率": [movement_frequency],
 })
-st.subheader("输入参数")
+st.subheader("参数信息")
 st.write(input_data)
 
 # 疲劳评估按钮
