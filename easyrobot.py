@@ -268,6 +268,7 @@ if st.session_state.get("messages") and st.session_state.get("api_key_entered", 
         "content": "你是一个专家，专注于人因工程领域。你只能回答与人因工程相关的问题，"
                    "并且你不能透露你是一个AI，也不能提及任何系统、API或其他背景信息。"
                    "请仅根据人因工程的知识提供帮助。"
+                   "请使用尽量多的人因工程学的术语。"
     }
 
     # 确保会话消息列表存在
