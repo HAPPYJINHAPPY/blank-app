@@ -36,7 +36,7 @@ else:
     plt.rcParams['axes.unicode_minus'] = False
 
 # Load the uploaded file
-file_path = 'corrected_fatigue_simulation_data.csv'
+file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
 data = pd.read_csv(file_path, encoding='gbk')
 
 # 1. Features and labels
