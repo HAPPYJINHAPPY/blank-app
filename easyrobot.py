@@ -236,7 +236,7 @@ if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.s
                            f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
                            f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
                            f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度，" \
-                           f"每次持续时间为[task_duration]秒,每五分钟重复[movement_frequency]次。\n"\
+                           f"每次持续时间为{task_duration}秒,每五分钟重复{movement_frequency}次。\n"\
                            f"请基于这些数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
 
                 st.session_state.messages = [
