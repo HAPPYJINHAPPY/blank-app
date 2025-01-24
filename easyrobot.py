@@ -244,43 +244,43 @@ if st.session_state.show_ai_analysis:
         except Exception as e:
             st.error(f"初始化 Ark 客户端时出错：{e}")
 
-    # AI 分析逻辑
+     # AI 分析逻辑
     if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
-    # 检查疲劳评估结果是否存在
-    if "result" not in st.session_state:
-        st.warning("请先点击“评估”按钮进行疲劳评估！")
-    else:
-        if st.session_state.ai_analysis_result is None:
-            try:
-                # 构造 AI 输入
-                ai_input = f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，\n" \
-                           f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
-                           f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
-                           f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度，" \
-                           f"每次持续时间为{task_duration}秒,每五分钟重复{movement_frequency}次, \n"\
-                           f"请判断用户的疲劳程度，基于数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
-    
-                st.session_state.messages = [
-                    {"role": "system", "content": "你是一个人因工程专家，请基于用户的疲劳状态和角度数据提供建议。"},
-                    {"role": "user", "content": ai_input}
-                ]
-    
-                with st.spinner("正在进行 AI 分析，请稍等..."):
-                    response = ""
-                    for partial_response in call_ark_api(st.session_state.client, st.session_state.messages):
-                        if "Error" in partial_response:
-                            st.error(partial_response)
-                            break
-                        response += partial_response
-    
-                    if response:
-                        st.session_state.ai_analysis_result = response
-                        st.session_state.messages.append({"role": "assistant", "content": response})
-                    else:
-                        st.error("AI 分析返回空结果，请稍后重试。")
-    
-            except Exception as e:
-                st.error(f"AI 分析调用失败：{e}")
+        # 检查疲劳评估结果是否存在
+        if "result" not in st.session_state:
+            st.warning("请先点击“评估”按钮进行疲劳评估！")
+        else:
+            if st.session_state.ai_analysis_result is None:
+                try:
+                    # 构造 AI 输入
+                    ai_input = f"用户的疲劳状态是：{st.session_state.result}。\n" \
+                               f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
+                               f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
+                               f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
+                               f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
+                               f"请判断用户的疲劳程度，基于数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
+
+                    st.session_state.messages = [
+                        {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"},
+                        {"role": "user", "content": ai_input}
+                    ]
+
+                    with st.spinner("正在进行 AI 分析，请稍等..."):
+                        response = ""
+                        for partial_response in call_ark_api(st.session_state.client, st.session_state.messages):
+                            if "Error" in partial_response:
+                                st.error(partial_response)
+                                break
+                            response += partial_response
+
+                        if response:
+                            st.session_state.ai_analysis_result = response
+                            st.session_state.messages.append({"role": "assistant", "content": response})
+                        else:
+                            st.error("AI 分析返回空结果，请稍后重试。")
+
+                except Exception as e:
+                    st.error(f"AI 分析调用失败：{e}")
 
 # 定义聊天输入框并处理用户输入
 if st.session_state.get("messages") and st.session_state.get("api_key_entered", False) and st.session_state.client:
