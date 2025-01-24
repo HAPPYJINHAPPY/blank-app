@@ -228,11 +228,12 @@ if st.button("评估"):
         if 'client' in st.session_state:
             del st.session_state.client  # 删除旧的 Ark 客户端
 
-# 显示 AI 分析输入
-if st.session_state.show_ai_analysis:
+
+# 显示 AI 分析按钮
+if st.button("开始 AI 分析"):
+    # 显示 AI 分析部分
     st.subheader("AI 分析")
     st.info("生成潜在人因危害分析及改善建议：")
-
     # 直接使用预设的API密钥
     API_KEY = "5a5bd8a8-2257-4990-bac2-12b55ce17d4f"  # 直接设置 API_KEY
     if API_KEY:
