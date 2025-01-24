@@ -147,9 +147,9 @@ with col2:
 st.subheader("时间参数")
 col3, col4 = st.columns(2)
 with col3:
-    task_duration = st.number_input("持续时间（秒）", min_value=0, value=6)
+    task_duration = st.number_input("持续时间（秒）", min_value=0, value=5)
 with col4:
-    movement_frequency = st.number_input("重复频率（每5分钟）", min_value=0, value=10)
+    movement_frequency = st.number_input("重复频率（每5分钟）", min_value=0, value=35)
 
 # 初始化会话状态
 if "show_ai_analysis" not in st.session_state:
