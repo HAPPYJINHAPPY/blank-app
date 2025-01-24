@@ -74,6 +74,7 @@ sns.barplot(x="Importance", y="Feature", data=importance_df, palette="viridis", 
 ax.set_title("Feature Importance in Fatigue Classification")
 ax.set_xlabel("Importance Score")
 ax.set_ylabel("Features")
+set_font_properties(ax, font_prop)
 
 # Save model
 with open("fatigue_model.pkl", "wb") as f:
@@ -98,9 +99,30 @@ def load_model():
 
 
 model = load_model()
+# Streamlit sidebar
+if st.sidebar.checkbox("标准参考"):
+    st.markdown("""各动作的舒适范围：  
+    颈部前屈舒适范围：0°到40°  
+    颈部后仰舒适范围：0°到40°    
+    肩部上举舒适范围：0°到120°（过度上举可能导致肩部肌肉疲劳和肩袖损伤风险）  
+    肩部前伸舒适范围：0°到90°  
+    肘部屈伸舒适范围：0°到150°   
+    手腕背伸舒适范围：0°到60°  
+    手腕桡偏 / 尺偏舒适范围：0°到15°（任何超过此角度都容易造成腕管综合症或肌腱问题）  
+    背部屈曲舒适范围：0°到45°   
+    重复频率（次/分钟）:   
+    0 - 20 低疲劳，低风险，适合大多数日常活动  
+    20 - 40 中疲劳，中等风险，长时间重复可能导致肌肉疲劳  
+    > 40 高疲劳，高风险，极容易导致肌肉劳损、骨骼疲劳和长期伤害  
+    参考文献和来源：  
+    ISO 11228-3:2003: 适用于评估高重复频率和大范围的手臂、肩膀和颈部动作对工作者的影响。  
+    NIOSH: 美国国家职业安全健康研究所关于工作任务和重复动作的疲劳评估模型。  
+    OSHA: 美国职业安全健康管理局的工作条件和疲劳评估准则。""")
 
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
+st.markdown("""模型参考ISO 11226: Static working postures、NIOSH Guidelines for Manual Material Handling、
+OWAS Analysis and Recommendations.等国际标准""")
 
 # 初始化存储所有预测记录的列表
 if 'predictions' not in st.session_state:
@@ -113,13 +135,13 @@ with col1:
     neck_flexion = st.slider("颈部前屈", 0, 60, 20)
     neck_extension = st.slider("颈部后仰", 0, 60, 25)
     shoulder_elevation = st.slider("肩部上举范围", 0, 180, 60)
-    shoulder_forward = st.slider("肩部前伸范围", 0, 90, 30)
+    shoulder_forward = st.slider("肩部前伸范围", 0, 180, 120)
 
 with col2:
-    elbow_flexion = st.slider("肘部屈伸", 0, 180, 90)
-    wrist_extension = st.slider("手腕背伸", 0, 90, 15)
-    wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 45, 10)
-    back_flexion = st.slider("背部屈曲范围", 0, 90, 20)
+    elbow_flexion = st.slider("肘部屈伸", 0, 180, 120)
+    wrist_extension = st.slider("手腕背伸", 0, 60, 15)
+    wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 30, 10)
+    back_flexion = st.slider("背部屈曲范围", 0, 60, 20)
 
 # Task parameters
 st.subheader("时间参数")
@@ -222,8 +244,8 @@ if st.session_state.show_ai_analysis:
         except Exception as e:
             st.error(f"初始化 Ark 客户端时出错：{e}")
 
-# AI 分析逻辑
-if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
+    # AI 分析逻辑
+    if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
     # 检查疲劳评估结果是否存在
     if "result" not in st.session_state:
         st.warning("请先点击“评估”按钮进行疲劳评估！")
@@ -237,12 +259,12 @@ if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.s
                            f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度，" \
                            f"每次持续时间为{task_duration}秒,每五分钟重复{movement_frequency}次, \n"\
                            f"请判断用户的疲劳程度，基于数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
-
+    
                 st.session_state.messages = [
-                    {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"},
+                    {"role": "system", "content": "你是一个人因工程专家，请基于用户的疲劳状态和角度数据提供建议。"},
                     {"role": "user", "content": ai_input}
                 ]
-
+    
                 with st.spinner("正在进行 AI 分析，请稍等..."):
                     response = ""
                     for partial_response in call_ark_api(st.session_state.client, st.session_state.messages):
@@ -250,13 +272,13 @@ if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.s
                             st.error(partial_response)
                             break
                         response += partial_response
-
+    
                     if response:
                         st.session_state.ai_analysis_result = response
                         st.session_state.messages.append({"role": "assistant", "content": response})
                     else:
                         st.error("AI 分析返回空结果，请稍后重试。")
-
+    
             except Exception as e:
                 st.error(f"AI 分析调用失败：{e}")
 
