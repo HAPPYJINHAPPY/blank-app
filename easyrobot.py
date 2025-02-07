@@ -18,6 +18,12 @@ GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
 GITHUB_BRANCH = 'main'  # 要上传的分支
 FILE_PATH = 'fatigue_data.csv'  # 文件路径
+def get_file_content(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return file.read()
+    except FileNotFoundError:
+        return ""  # 如果文件不存在，返回空字符串
 
 # 获取文件的 SHA 值
 def get_file_sha(file_path):
