@@ -1,0 +1,28 @@
+name: Sync Data
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 00:00 执行
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "your_email@example.com"
+          git config --global user.name "Your Name"
+          git add fatigue_data.csv
+          git commit -m "Update data" -m "Update data" || echo "No changes to commit"
+          git push origin main
