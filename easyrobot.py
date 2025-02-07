@@ -48,7 +48,6 @@ def save_to_csv(input_data, result):
     print(f"Saving file to: {FILE_PATH}")  # Debugging line
     df.to_csv(FILE_PATH, index=False)
 
-# 使用 GitHub API 上传文件
 def upload_to_github(file_path):
     # 获取文件的 SHA 值
     sha_value = get_file_sha(file_path)
@@ -80,16 +79,12 @@ def upload_to_github(file_path):
 
     response = requests.put(url, json=data, headers=headers)
 
-    # 检查请求是否成功
-    if response.status_code == 201:
-        st.success("CSV file successfully uploaded to GitHub!")
-    elif response.status_code == 422:
-        # 如果文件已存在，进行更新
-        st.warning("File already exists. It has been updated!")
+    # 输出详细错误信息
+    if response.status_code != 200 and response.status_code != 201:
+        st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
+        print(f"GitHub API Response: {response.json()}")  # 这里打印出响应的详细信息
     else:
-        # 输出失败时的错误信息
-        st.error(f"Failed to upload CSV file to GitHub: {response.json().get('message', 'Unknown error')}")
-        print(f"Error details: {response.json()}")
+        st.success("CSV file successfully uploaded to GitHub!")
 
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
