@@ -15,7 +15,7 @@ GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 替换为你的 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
 GITHUB_BRANCH = 'main'  # 要上传的分支
-# 保存数据到 CSV 文件
+FILE_PATH = 'fatigue_data.csv'  # 文件路径
 
 # 获取文件的 SHA 值
 def get_file_sha(file_path):
@@ -45,6 +45,7 @@ def save_to_csv(input_data, result):
         "fatigue_result": result
     }
     df = pd.DataFrame([data])
+    print(f"Saving file to: {FILE_PATH}")  # Debugging line
     df.to_csv(FILE_PATH, index=False)
 
 # 使用 GitHub API 上传文件
