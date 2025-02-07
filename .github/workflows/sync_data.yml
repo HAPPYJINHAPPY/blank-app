@@ -22,8 +22,10 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --global user.email "your_email@example.com"
-          git config --global user.name "Your Name"
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
           git add fatigue_data.csv
           git commit -m "Update data" || echo "No changes to commit"
-          git push origin main
+          git pull origin main --rebase
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
+
