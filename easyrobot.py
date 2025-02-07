@@ -11,7 +11,10 @@ import os
 from volcenginesdkarkruntime import Ark
 import base64
 import requests
-
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 替换为你的 GitHub 令牌
+GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
+GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
+GITHUB_BRANCH = 'main'  # 要上传的分支
 # 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
     data = {
