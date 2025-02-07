@@ -9,6 +9,9 @@ import streamlit as st
 from matplotlib import font_manager
 import os
 from volcenginesdkarkruntime import Ark
+import base64
+import requests
+
 # 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
     data = {
