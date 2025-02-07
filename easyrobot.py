@@ -49,7 +49,7 @@ def save_to_csv(input_data, result):
         "背部屈曲范围": int(input_data["背部屈曲范围"].values[0]),
         "持续时间": int(input_data["持续时间"].values[0]),
         "重复频率": int(input_data["重复频率"].values[0]),
-        "fatigue_result": result
+        "fatigue_result": result,
         "timestamp": timestamp  # 增加时间戳
     }
     df = pd.DataFrame([data])
