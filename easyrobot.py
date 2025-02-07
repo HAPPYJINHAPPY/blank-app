@@ -25,18 +25,37 @@ def save_to_csv(input_data, result):
         "fatigue_result": result
     }
     df = pd.DataFrame([data])
+    df.to_csv('fatigue_data.csv', index=False)
 
-    csv_file = "fatigue_data.csv"
+# 使用 GitHub API 上传文件
+def upload_to_github(file_path):
+    # 读取 CSV 文件内容并进行 base64 编码
+    with open(file_path, 'rb') as file:
+        content = base64.b64encode(file.read()).decode()
 
-    # 确保 CSV 文件存在
-    if not os.path.exists(csv_file):
-        df.to_csv(csv_file, index=False)
+    # GitHub API 请求 URL
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{file_path}'
+
+    # 提交的信息
+    commit_message = "Add new fatigue data"
+    data = {
+        "message": commit_message,
+        "branch": GITHUB_BRANCH,
+        "content": content
+    }
+
+    headers = {
+        'Authorization': f'token {GITHUB_TOKEN}',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+
+    response = requests.put(url, json=data, headers=headers)
+
+    # 检查请求是否成功
+    if response.status_code == 201:
+        st.success("CSV file successfully uploaded to GitHub!")
     else:
-        existing_data = pd.read_csv(csv_file)
-        df = pd.concat([existing_data, df], ignore_index=True)
-        df.to_csv(csv_file, index=False)
-
-    st.success("数据已成功追加到 fatigue_data.csv 文件！")
+        st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
     
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
@@ -238,7 +257,10 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
+        # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result)
+        # 上传 CSV 文件到 GitHub 仓库
+        upload_to_github("fatigue_data.csv")
 
         # 保存评估结果到会话状态
         st.session_state.result = result
