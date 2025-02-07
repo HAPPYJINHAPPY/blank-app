@@ -9,7 +9,30 @@ import streamlit as st
 from matplotlib import font_manager
 import os
 from volcenginesdkarkruntime import Ark
-
+# 保存数据到 CSV 文件
+def save_to_csv(input_data, result):
+    data = {
+        "颈部前屈": int(input_data["颈部前屈"].values[0]),
+        "颈部后仰": int(input_data["颈部后仰"].values[0]),
+        "肩部上举范围": int(input_data["肩部上举范围"].values[0]),
+        "肩部前伸范围": int(input_data["肩部前伸范围"].values[0]),
+        "肘部屈伸": int(input_data["肘部屈伸"].values[0]),
+        "手腕背伸": int(input_data["手腕背伸"].values[0]),
+        "手腕桡偏/尺偏": int(input_data["手腕桡偏/尺偏"].values[0]),
+        "背部屈曲范围": int(input_data["背部屈曲范围"].values[0]),
+        "持续时间": int(input_data["持续时间"].values[0]),
+        "重复频率": int(input_data["重复频率"].values[0]),
+        "fatigue_result": result
+    }
+    df = pd.DataFrame([data])
+    csv_file = "fatigue_data.csv"
+    try:
+        existing_data = pd.read_csv(csv_file)
+        df = pd.concat([existing_data, df], ignore_index=True)
+    except FileNotFoundError:
+        pass
+    df.to_csv(csv_file, index=False)
+    
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
 # 检查字体文件是否存在
@@ -210,6 +233,7 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
+        save_to_csv(input_data, result)
 
         # 保存评估结果到会话状态
         st.session_state.result = result
