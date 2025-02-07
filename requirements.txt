@@ -4,10 +4,11 @@ httpx==0.23.3
 pandas
 scikit-learn
 matplotlib
-shap
 seaborn
 numpy
 plotly
 pillow
 openpyxl>=3.0.0
 pydantic
+base64
+requests
