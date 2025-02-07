@@ -310,7 +310,7 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result)
         upload_to_github(FILE_PATH)
