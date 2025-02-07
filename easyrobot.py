@@ -12,11 +12,6 @@ from volcenginesdkarkruntime import Ark
 import base64
 import requests
 
-# GitHub 配置
-GITHUB_TOKEN = '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'  # 替换为你的 GitHub 令牌
-GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
-GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
-GITHUB_BRANCH = 'main'  # 要上传的分支
 # 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
     data = {
