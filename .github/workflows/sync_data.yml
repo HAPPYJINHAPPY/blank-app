@@ -10,7 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 确保 fatigue_data.csv 文件存在，若不存在则创建
+      # 1. 获取最新代码
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 确保 fatigue_data.csv 文件存在，若不存在则创建
       - name: Ensure fatigue_data.csv exists
         run: |
           if [ ! -f "fatigue_data.csv" ]; then
@@ -20,13 +24,9 @@ jobs:
             echo "fatigue_data.csv already exists."
           fi
 
-      # 2. 打印当前目录中的文件，确保 fatigue_data.csv 文件确实存在
+      # 3. 打印当前目录中的文件，确保 fatigue_data.csv 文件确实存在
       - name: List files in the directory
         run: ls -l
-
-      # 3. 获取最新代码
-      - name: Checkout code
-        uses: actions/checkout@v3
 
       # 4. 设置 Python 环境
       - name: Set up Python
