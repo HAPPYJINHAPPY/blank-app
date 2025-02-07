@@ -42,11 +42,20 @@ jobs:
       - name: Check git status
         run: git status
 
-      # 7. 如果文件确实存在并有变更，强制清除 Git 缓存并添加文件
+      # 7. 清除 Git 缓存
       - name: Clean Git cache
         run: git rm -r --cached .
 
-      # 8. 提交并推送更改
+      # 8. 查看文件状态（这里加入额外调试）
+      - name: Check if fatigue_data.csv is detected
+        run: |
+          if git ls-files --error-unmatch fatigue_data.csv; then
+            echo "fatigue_data.csv is tracked by Git."
+          else
+            echo "fatigue_data.csv is not tracked by Git."
+          fi
+
+      # 9. 提交并推送更改
       - name: Commit and push changes
         run: |
           git config --global user.email "github-actions@github.com"
