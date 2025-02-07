@@ -25,13 +25,18 @@ def save_to_csv(input_data, result):
         "fatigue_result": result
     }
     df = pd.DataFrame([data])
+
     csv_file = "fatigue_data.csv"
-    try:
+
+    # 确保 CSV 文件存在
+    if not os.path.exists(csv_file):
+        df.to_csv(csv_file, index=False)
+    else:
         existing_data = pd.read_csv(csv_file)
         df = pd.concat([existing_data, df], ignore_index=True)
-    except FileNotFoundError:
-        pass
-    df.to_csv(csv_file, index=False)
+        df.to_csv(csv_file, index=False)
+
+    st.success("数据已成功追加到 fatigue_data.csv 文件！")
     
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
