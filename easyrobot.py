@@ -11,6 +11,8 @@ import os
 from volcenginesdkarkruntime import Ark
 import base64
 import requests
+import time
+
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 替换为你的 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
