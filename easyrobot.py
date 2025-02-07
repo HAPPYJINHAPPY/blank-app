@@ -16,6 +16,20 @@ GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
 GITHUB_BRANCH = 'main'  # 要上传的分支
 # 保存数据到 CSV 文件
+
+# 获取文件的 SHA 值
+def get_file_sha(file_path):
+    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{file_path}'
+    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        file_info = response.json()
+        return file_info['sha']
+    else:
+        return None  # 文件不存在时返回 None
+
+# 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
     data = {
         "颈部前屈": int(input_data["颈部前屈"].values[0]),
@@ -31,7 +45,7 @@ def save_to_csv(input_data, result):
         "fatigue_result": result
     }
     df = pd.DataFrame([data])
-    df.to_csv('fatigue_data.csv', index=False)
+    df.to_csv(FILE_PATH, index=False)
 
 # 使用 GitHub API 上传文件
 def upload_to_github(file_path):
@@ -273,9 +287,7 @@ if st.button("评估"):
         st.success(f"评估结果：{result}")
         # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result)
-        # 上传 CSV 文件到 GitHub 仓库
-        upload_to_github("fatigue_data.csv")
-
+        upload_to_github(FILE_PATH)
         # 保存评估结果到会话状态
         st.session_state.result = result
         record = input_data.copy()
