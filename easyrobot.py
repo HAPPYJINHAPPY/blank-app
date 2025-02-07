@@ -13,7 +13,7 @@ import base64
 import requests
 
 # GitHub 配置
-GITHUB_TOKEN = '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'  # 替换为你的 GitHub 令牌
+GITHUB_TOKEN = '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'  # 替换为你的 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
 GITHUB_BRANCH = 'main'  # 要上传的分支
