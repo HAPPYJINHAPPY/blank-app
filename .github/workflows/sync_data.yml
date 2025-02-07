@@ -8,25 +8,45 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. 确保 fatigue_data.csv 文件存在
       - name: Ensure fatigue_data.csv exists
         run: |
           if [ ! -f "fatigue_data.csv" ]; then
             echo "Creating fatigue_data.csv..."
             echo "颈部前屈,颈部后仰,肩部上举范围,肩部前伸范围,肘部屈伸,手腕背伸,手腕桡偏/尺偏,背部屈曲范围,持续时间,重复频率,fatigue_result" > fatigue_data.csv
+          else
+            echo "fatigue_data.csv already exists."
           fi
 
+      # 2. 打印当前目录中的文件，确保 fatigue_data.csv 文件确实存在
+      - name: List files in the directory
+        run: ls -l
+
+      # 3. 获取最新代码
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 4. 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: 3.x
 
+      # 5. 安装依赖
       - name: Install dependencies
         run: pip install pandas
 
+      # 6. 查看当前 Git 状态，确认是否有变更
+      - name: Check git status
+        run: git status
+
+      # 7. 如果文件确实存在并有变更，强制清除 Git 缓存并添加文件
+      - name: Clean Git cache
+        run: git rm -r --cached .
+
+      # 8. 提交并推送更改
       - name: Commit and push changes
         run: |
           git config --global user.email "github-actions@github.com"
@@ -35,4 +55,3 @@ jobs:
           git commit -m "Update data" || echo "No changes to commit"
           git pull origin main --rebase
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git main
-
