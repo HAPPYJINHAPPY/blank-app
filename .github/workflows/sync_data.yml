@@ -9,6 +9,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Ensure fatigue_data.csv exists
+        run: |
+          if [ ! -f "fatigue_data.csv" ]; then
+            echo "Creating fatigue_data.csv..."
+            echo "颈部前屈,颈部后仰,肩部上举范围,肩部前伸范围,肘部屈伸,手腕背伸,手腕桡偏/尺偏,背部屈曲范围,持续时间,重复频率,fatigue_result" > fatigue_data.csv
+          fi
+
       - name: Checkout code
         uses: actions/checkout@v3
 
