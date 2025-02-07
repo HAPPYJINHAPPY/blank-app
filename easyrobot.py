@@ -12,6 +12,8 @@ from volcenginesdkarkruntime import Ark
 import base64
 import requests
 import datetime
+import io
+
 
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 替换为你的 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
@@ -65,8 +67,9 @@ def save_to_csv(input_data, result):
         st.error("无法从 GitHub 获取现有数据，无法保存新数据。")
         return
 
-    # 将现有内容转换为 DataFrame
-    existing_df = pd.read_csv(pd.compat.StringIO(existing_content))
+    # 使用 io.StringIO 而不是 pd.compat.StringIO
+    existing_df = pd.read_csv(io.StringIO(existing_content))
+
 
     # 追加新数据
     updated_df = pd.concat([existing_df, df], ignore_index=True)
