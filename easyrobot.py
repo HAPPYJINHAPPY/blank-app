@@ -25,12 +25,17 @@ def get_file_sha(file_path):
 
     if response.status_code == 200:
         file_info = response.json()
-        return file_info['sha']
+        file_content = base64.b64decode(file_info['content']).decode('utf-8')
+        return file_content
     else:
-        return None  # 文件不存在时返回 None
+        st.warning(f"无法从 GitHub 获取文件: {response.json()}")
+        return None
 
 # 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
+    # 获取当前时间戳
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     data = {
         "颈部前屈": int(input_data["颈部前屈"].values[0]),
         "颈部后仰": int(input_data["颈部后仰"].values[0]),
@@ -43,11 +48,28 @@ def save_to_csv(input_data, result):
         "持续时间": int(input_data["持续时间"].values[0]),
         "重复频率": int(input_data["重复频率"].values[0]),
         "fatigue_result": result
+        "timestamp": timestamp  # 增加时间戳
     }
     df = pd.DataFrame([data])
-    print(f"Saving file to: {FILE_PATH}")  # Debugging line
-    df.to_csv(FILE_PATH, index=False)
+   # 获取文件的现有内容
+    existing_content = get_file_content(FILE_PATH)
+    if existing_content is None:
+        st.error("无法从 GitHub 获取现有数据，无法保存新数据。")
+        return
 
+    # 将现有内容转换为 DataFrame
+    existing_df = pd.read_csv(pd.compat.StringIO(existing_content))
+
+    # 追加新数据
+    updated_df = pd.concat([existing_df, df], ignore_index=True)
+
+    # 保存合并后的数据到 GitHub
+    print(f"Saving file to: {FILE_PATH}")
+    updated_df.to_csv(FILE_PATH, index=False)
+
+    upload_to_github(FILE_PATH)
+
+# 修改后的上传函数，不会覆盖文件
 def upload_to_github(file_path):
     # 获取文件的 SHA 值
     sha_value = get_file_sha(file_path)
@@ -60,7 +82,7 @@ def upload_to_github(file_path):
     url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{file_path}'
 
     # 提交的信息
-    commit_message = "Add new fatigue data"
+    commit_message = "Add new fatigue data with timestamp"
     
     data = {
         "message": commit_message,
