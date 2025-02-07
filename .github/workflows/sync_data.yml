@@ -42,20 +42,20 @@ jobs:
       - name: Check git status
         run: git status
 
-      # 7. 清除 Git 缓存并强制重新添加文件
-      - name: Clean Git cache and add changes
+      # 7. 确保 git 中跟踪了 fatigue_data.csv 文件
+      - name: Add fatigue_data.csv to git
         run: |
-          git rm -r --cached .   # 清除所有文件的缓存
-          git add fatigue_data.csv   # 重新添加 fatigue_data.csv 文件
-          git status   # 查看当前状态，确保文件被添加
+          git add fatigue_data.csv  # 确保文件被添加到 Git
+          git status  # 查看文件是否已被添加到 Git 跟踪
 
-      # 8. 查看文件是否被正确跟踪
+      # 8. 检查文件是否被 Git 跟踪
       - name: Check if fatigue_data.csv is tracked by Git
         run: |
           if git ls-files --error-unmatch fatigue_data.csv; then
             echo "fatigue_data.csv is tracked by Git."
           else
             echo "fatigue_data.csv is not tracked by Git."
+            exit 1  # 如果文件没有被跟踪，立即退出并显示错误
           fi
 
       # 9. 提交并推送更改
