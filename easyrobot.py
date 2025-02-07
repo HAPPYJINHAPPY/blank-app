@@ -83,8 +83,13 @@ def upload_to_github(file_path):
     # 检查请求是否成功
     if response.status_code == 201:
         st.success("CSV file successfully uploaded to GitHub!")
+    elif response.status_code == 422:
+        # 如果文件已存在，进行更新
+        st.warning("File already exists. It has been updated!")
     else:
-        st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
+        # 输出失败时的错误信息
+        st.error(f"Failed to upload CSV file to GitHub: {response.json().get('message', 'Unknown error')}")
+        print(f"Error details: {response.json()}")
 
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
