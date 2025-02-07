@@ -35,6 +35,9 @@ def save_to_csv(input_data, result):
 
 # 使用 GitHub API 上传文件
 def upload_to_github(file_path):
+    # 获取文件的 SHA 值
+    sha_value = get_file_sha(file_path)
+    
     # 读取 CSV 文件内容并进行 base64 编码
     with open(file_path, 'rb') as file:
         content = base64.b64encode(file.read()).decode()
@@ -44,11 +47,16 @@ def upload_to_github(file_path):
 
     # 提交的信息
     commit_message = "Add new fatigue data"
+    
     data = {
         "message": commit_message,
         "branch": GITHUB_BRANCH,
-        "content": content
+        "content": content,
     }
+    
+    # 如果文件已经存在，提供 sha 值
+    if sha_value:
+        data["sha"] = sha_value
 
     headers = {
         'Authorization': f'token {GITHUB_TOKEN}',
@@ -62,7 +70,7 @@ def upload_to_github(file_path):
         st.success("CSV file successfully uploaded to GitHub!")
     else:
         st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
-    
+
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
 # 检查字体文件是否存在
