@@ -359,6 +359,7 @@ def calculate_score(answer):
         return 3
     else:  # 总是
         return 4
+
 # 按钮点击后的逻辑
 if st.button("评估"):
     # 如果用户未选择所有问题，则提示
