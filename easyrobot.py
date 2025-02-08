@@ -388,7 +388,9 @@ if st.button("评估"):
             del st.session_state.API_KEY
         if 'client' in st.session_state:
             del st.session_state.client  # 删除旧的 Ark 客户端
-
+# 显示评估结果（存储在 session_state 中，确保结果持久化）
+if 'result' in st.session_state:
+    st.write(f"评估结果：{st.session_state.result}")
 if st.button("开始 AI 分析"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
