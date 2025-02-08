@@ -322,19 +322,21 @@ st.write(input_data)
 # 使用 st.columns() 来实现横向排列
 col1, col2, col3 = st.columns(3)
 
-# 创建一个单选框，将所有选项放入同一个单选框组件
-user_fatigue = st.radio(
-    "请选择您的疲劳水平", 
-    options=["请选择", "精力充沛", "稍感疲惫", "非常疲劳"],
-    index=0  # 初始选中"请选择"
-)
+# 这里创建一个标签但没有勾选默认选项
+with col1:
+    option_1 = st.radio("", ["精力充沛"], index=-1, key="1", label_visibility="collapsed")
+with col2:
+    option_2 = st.radio("", ["稍感疲惫"], index=-1, key="2", label_visibility="collapsed")
+with col3:
+    option_3 = st.radio("", ["非常疲劳"], index=-1, key="3", label_visibility="collapsed")
 
-# 评估按钮
+# 使用一个按钮进行评估
 if st.button("评估"):
-    if user_fatigue == "请选择":
-        st.warning("请先选择您的疲劳水平！")
+    if option_1 or option_2 or option_3:
+        # 检查哪个选项被选中并进行评估
+        st.success(f"您的疲劳水平自评为 {option_1 or option_2 or option_3}，正在进行评估...")
     else:
-        st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
+        st.warning("请先选择您的疲劳水平！")
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
