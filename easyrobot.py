@@ -359,26 +359,23 @@ def calculate_score(answer):
         return 3
     else:  # 总是
         return 4
-
-# 计算总得分
-score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
-
-# 显示结果
-if score == 0:
-    st.write("请回答所有问题。")
-else:
-    st.write(f"您的疲劳总分：{score}")
-
-    if score <= 3:
-        st.write("您的疲劳感较轻，状态较好。")
-    elif 4 <= score <= 6:
-        st.write("您的疲劳感中等，建议适当休息。")
-    else:
-        st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
-# 评估按钮
+# 按钮点击后的逻辑
 if st.button("评估"):
+    # 如果用户未选择所有问题，则提示
+    if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
+        st.warning("请先选择所有问题的答案！")
+    else:
+        # 计算总得分
+        score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
         st.success(f"您的疲劳水平自评为：{score}，正在进行评估...")
-        st.warning("请先选择您的疲劳水平！")
+
+        # 显示结果
+        if score <= 3:
+            st.write("您的疲劳感较轻，状态较好。")
+        elif 4 <= score <= 6:
+            st.write("您的疲劳感中等，建议适当休息。")
+        else:
+            st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
