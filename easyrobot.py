@@ -13,6 +13,11 @@ import base64
 import requests
 import datetime
 import io
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 从 Streamlit secrets 中获取 GitHub 令牌
+GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
+GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
+GITHUB_BRANCH = 'main'  # 要上传的分支
+FILE_PATH = 'fatigue_data.csv'  # 文件路径
 
 # 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
 def get_file_content(file_path):
