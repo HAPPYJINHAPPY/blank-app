@@ -14,18 +14,16 @@ import requests
 import datetime
 import io
 
-
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 替换为你的 GitHub 令牌
-GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
-GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
-GITHUB_BRANCH = 'main'  # 要上传的分支
-FILE_PATH = 'fatigue_data.csv'  # 文件路径
+# 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
 def get_file_content(file_path):
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             return file.read()
     except FileNotFoundError:
         return ""  # 如果文件不存在，返回空字符串
+    except UnicodeDecodeError:
+        st.error("文件编码错误，无法解码文件。")
+        return None
 
 # 获取文件的 SHA 值
 def get_file_sha(file_path):
@@ -35,8 +33,7 @@ def get_file_sha(file_path):
 
     if response.status_code == 200:
         file_info = response.json()
-        file_content = base64.b64decode(file_info['content']).decode('utf-8')
-        return file_content
+        return file_info['sha']  # 返回SHA值
     else:
         st.warning(f"无法从 GitHub 获取文件: {response.json()}")
         return None
@@ -63,31 +60,26 @@ def save_to_csv(input_data, result):
     df = pd.DataFrame([data])
 
     # 检查文件是否存在
-    if os.path.exists(file_path):
-        existing_content = get_file_content(file_path)
+    if os.path.exists(FILE_PATH):
+        existing_content = get_file_content(FILE_PATH)
         
-        # 检查文件是否为空
-        if existing_content.strip():
-            # 文件内容非空，读取数据
+        # 如果文件内容非空，读取数据
+        if existing_content and existing_content.strip():
             existing_df = pd.read_csv(io.StringIO(existing_content))
         else:
             # 如果文件为空，初始化空的 DataFrame
-            existing_df = pd.DataFrame(columns=['timestamp', 'input_data', 'result'])
+            existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result'])
     else:
         # 文件不存在，初始化空的 DataFrame
-        existing_df = pd.DataFrame(columns=['timestamp', 'input_data', 'result'])
-
-    # 假设 input_data 和 result 已经准备好
-    new_data = {'timestamp': pd.Timestamp.now(), 'input_data': input_data, 'result': result}
-    new_df = pd.DataFrame([new_data])
+        existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result'])
 
     # 合并现有的 DataFrame 和新数据
-    updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+    updated_df = pd.concat([existing_df, df], ignore_index=True)
 
     # 保存更新后的 DataFrame 到 CSV 文件
-    updated_df.to_csv(file_path, index=False)
+    updated_df.to_csv(FILE_PATH, index=False)
 
-# 修改后的上传函数，不会覆盖文件
+# 上传到 GitHub
 def upload_to_github(file_path):
     # 获取文件的 SHA 值
     sha_value = get_file_sha(file_path)
@@ -122,10 +114,10 @@ def upload_to_github(file_path):
     # 输出详细错误信息
     if response.status_code != 200 and response.status_code != 201:
         st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
-        print(f"GitHub API Response: {response.json()}")  # 这里打印出响应的详细信息
+        print(f"GitHub API Response: {response.json()}")
     else:
         st.success("CSV file successfully uploaded to GitHub!")
-
+        
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
 # 检查字体文件是否存在
