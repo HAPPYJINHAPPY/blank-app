@@ -45,12 +45,17 @@ def get_file_sha(file_path):
         st.warning(f"无法从 GitHub 获取文件: {response.json()}")
         return None
 
-# 保存数据到 CSV 文件
-def save_to_csv(input_data, result):
+def save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue):
+    # 计算各问题的得分
+    body_fatigue_score = calculate_score(body_fatigue)
+    cognitive_fatigue_score = calculate_score(cognitive_fatigue)
+    emotional_fatigue_score = calculate_score(emotional_fatigue)
+    
     # 获取当前时间戳
     tz = pytz.timezone('Asia/Shanghai')
     timestamp = datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
 
+    # 数据字典，包括评分和其他输入
     data = {
         "颈部前屈": int(input_data["颈部前屈"].values[0]),
         "颈部后仰": int(input_data["颈部后仰"].values[0]),
@@ -63,6 +68,9 @@ def save_to_csv(input_data, result):
         "持续时间": int(input_data["持续时间"].values[0]),
         "重复频率": int(input_data["重复频率"].values[0]),
         "fatigue_result": result,
+        "body_fatigue_score": body_fatigue_score,  # 添加评分
+        "cognitive_fatigue_score": cognitive_fatigue_score,  # 添加评分
+        "emotional_fatigue_score": emotional_fatigue_score,  # 添加评分
         "timestamp": timestamp  # 增加时间戳
     }
     df = pd.DataFrame([data])
@@ -76,17 +84,16 @@ def save_to_csv(input_data, result):
             existing_df = pd.read_csv(io.StringIO(existing_content))
         else:
             # 如果文件为空，初始化空的 DataFrame
-            existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result'])
+            existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result', 'body_fatigue_score', 'cognitive_fatigue_score', 'emotional_fatigue_score'])
     else:
         # 文件不存在，初始化空的 DataFrame
-        existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result'])
+        existing_df = pd.DataFrame(columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸', '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result', 'body_fatigue_score', 'cognitive_fatigue_score', 'emotional_fatigue_score'])
 
     # 合并现有的 DataFrame 和新数据
     updated_df = pd.concat([existing_df, df], ignore_index=True)
 
     # 保存更新后的 DataFrame 到 CSV 文件
     updated_df.to_csv(FILE_PATH, index=False)
-
 # 上传到 GitHub
 def upload_to_github(file_path):
     # 获取文件的 SHA 值
@@ -123,6 +130,17 @@ def upload_to_github(file_path):
     if response.status_code != 200 and response.status_code != 201:
         st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
         print(f"GitHub API Response: {response.json()}")
+def calculate_score(answer):
+    if answer == '请选择':
+        return 0  # 未选择时，得分为 0
+    elif answer == '完全没有':
+        return 1
+    elif answer == '偶尔':
+        return 2
+    elif answer == '经常':
+        return 3
+    else:  # 总是
+        return 4
         
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
@@ -359,7 +377,7 @@ def calculate_score(answer):
         return 4
 
 if st.button("评估"):
-# 如果用户未选择所有问题，则提示
+    # 如果用户未选择所有问题，则提示
     if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
         st.warning("请先选择所有问题的答案！")
     else:
@@ -368,9 +386,9 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
-        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 保存数据到本地 CSV 文件
-        save_to_csv(input_data, result)
+        save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue)
         upload_to_github(FILE_PATH)
         # 保存评估结果到会话状态
         st.session_state.result = result
