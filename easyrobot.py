@@ -320,47 +320,58 @@ st.subheader("参数信息")
 st.write(input_data)
 
 
-# 使用 st.columns() 来实现横向排列
-col1, col2, col3 = st.columns(3)
+import streamlit as st
 
-# 使用 st.selectbox 来实现横向排列
-with col1:
-    option_1 = st.selectbox("精力充沛", ["", "精力充沛"], index=0, key="1", help="请选择您的疲劳状态")
-with col2:
-    option_2 = st.selectbox("稍感疲惫", ["", "稍感疲惫"], index=0, key="2", help="请选择您的疲劳状态")
-with col3:
-    option_3 = st.selectbox("非常疲劳", ["", "非常疲劳"], index=0, key="3", help="请选择您的疲劳状态")
+# 设置标题
+st.title("作业员疲劳状态简易评估问卷")
+
+# 说明
+st.write("""
+请根据您当前的感受选择最符合的答案。
+""")
 
 # 问题1：身体疲劳
-body_fatigue = st.radio(
+body_fatigue = st.selectbox(
     "1. 您是否感到身体上的疲劳或乏力？",
-    ('完全没有', '偶尔', '经常', '总是')
+    ['完全没有', '偶尔', '经常', '总是']
 )
 
 # 问题2：注意力集中
-cognitive_fatigue = st.radio(
+cognitive_fatigue = st.selectbox(
     "2. 您是否感到难以集中注意力？",
-    ('完全没有', '偶尔', '经常', '总是')
+    ['完全没有', '偶尔', '经常', '总是']
 )
 
 # 问题3：情绪疲劳
-emotional_fatigue = st.radio(
+emotional_fatigue = st.selectbox(
     "3. 您是否感到情绪疲惫或压力过大？",
-    ('完全没有', '偶尔', '经常', '总是')
+    ['完全没有', '偶尔', '经常', '总是']
 )
+
+# 根据选项得分
+def calculate_score(answer):
+    if answer == '完全没有':
+        return 1
+    elif answer == '偶尔':
+        return 2
+    elif answer == '经常':
+        return 3
+    else:  # 总是
+        return 4
+
+# 计算总得分
+score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
+
+if score <= 3:
+    st.write("您的疲劳感较轻，状态较好。")
+elif 4 <= score <= 6:
+    st.write("您的疲劳感中等，建议适当休息。")
+else:
+    st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
+
 # 评估按钮
 if st.button("评估"):
-    selected = None
-    if option_1 != "":
-        selected = option_1
-    elif option_2 != "":
-        selected = option_2
-    elif option_3 != "":
-        selected = option_3
-
-    if selected:
-        st.success(f"您的疲劳水平自评为：{selected}，正在进行评估...")
-    else:
+        st.success(f"您的疲劳水平自评为：{score}，正在进行评估...")
         st.warning("请先选择您的疲劳水平！")
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
