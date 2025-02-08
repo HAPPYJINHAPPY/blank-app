@@ -331,6 +331,23 @@ with col2:
 with col3:
     option_3 = st.selectbox("非常疲劳", ["", "非常疲劳"], index=0, key="3", help="请选择您的疲劳状态")
 
+# 问题1：身体疲劳
+body_fatigue = st.radio(
+    "1. 您是否感到身体上的疲劳或乏力？",
+    ('完全没有', '偶尔', '经常', '总是')
+)
+
+# 问题2：注意力集中
+cognitive_fatigue = st.radio(
+    "2. 您是否感到难以集中注意力？",
+    ('完全没有', '偶尔', '经常', '总是')
+)
+
+# 问题3：情绪疲劳
+emotional_fatigue = st.radio(
+    "3. 您是否感到情绪疲惫或压力过大？",
+    ('完全没有', '偶尔', '经常', '总是')
+)
 # 评估按钮
 if st.button("评估"):
     selected = None
