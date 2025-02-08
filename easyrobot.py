@@ -123,8 +123,6 @@ def upload_to_github(file_path):
     if response.status_code != 200 and response.status_code != 201:
         st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
         print(f"GitHub API Response: {response.json()}")
-    else:
-        st.success("CSV file successfully uploaded to GitHub!")
         
 font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
 
@@ -368,13 +366,6 @@ if st.button("评估"):
     else:
         # 计算总得分
         score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
-        # 显示结果
-        if score <= 3:
-            st.write("您的疲劳感较轻，状态较好。")
-        elif 4 <= score <= 6:
-            st.write("您的疲劳感中等，建议适当休息。")
-        else:
-            st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
