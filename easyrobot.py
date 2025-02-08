@@ -324,15 +324,15 @@ col1, col2, col3 = st.columns(3)
 # 问题1：身体疲劳
 with col1:
     body_fatigue = st.selectbox(
-        "1. 身体疲劳",
+        "1. 身体感到无力",
         ['请选择', '完全没有', '偶尔', '经常', '总是'],
         index=0  # 初始状态为未选择（'请选择'）
     )
 
-# 问题2：注意力集中
+# 问题2：注意力集中困难
 with col2:
     cognitive_fatigue = st.selectbox(
-        "2. 注意力集中",
+        "2. 注意力集中困难",
         ['请选择', '完全没有', '偶尔', '经常', '总是'],
         index=0  # 初始状态为未选择（'请选择'）
     )
@@ -340,7 +340,7 @@ with col2:
 # 问题3：情绪疲劳
 with col3:
     emotional_fatigue = st.selectbox(
-        "3. 情绪疲劳",
+        "3. 人际交往困难",
         ['请选择', '完全没有', '偶尔', '经常', '总是'],
         index=0  # 初始状态为未选择（'请选择'）
     )
@@ -357,9 +357,6 @@ def calculate_score(answer):
         return 3
     else:  # 总是
         return 4
-# 如果评估结果存在，则显示绿色框
-if 'result' in st.session_state:
-    st.markdown(f"<div style='background-color:#DFF2BF; padding: 10px; border-radius: 5px; color:#4F8A10; font-size:16px;'>评估结果：{st.session_state.result}</div>", unsafe_allow_html=True)
 
 if st.button("评估"):
 # 如果用户未选择所有问题，则提示
