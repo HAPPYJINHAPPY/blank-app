@@ -320,9 +320,11 @@ st.subheader("参数信息")
 st.write(input_data)
 
 
-# 创建一个自评滑块
-user_fatigue = st.slider("请评估您自己的疲劳程度", min_value=0, max_value=10, step=1)
-
+user_fatigue = st.radio(
+    "请评估您自己的身体状态",
+    options=["请选择", "精力充沛", "稍感疲劳", "非常疲劳"],
+    index=0  # 默认选项为 "请选择"
+)
 # 评估按钮
 if st.button("评估"):
     # 检查用户是否已经做出了自评
