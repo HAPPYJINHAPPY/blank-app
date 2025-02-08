@@ -319,29 +319,30 @@ input_data = pd.DataFrame({
 st.subheader("参数信息")
 st.write(input_data)
 
+
 # 使用 st.columns() 来实现横向排列
 col1, col2, col3 = st.columns(3)
 
 # 使用 st.selectbox 来实现横向排列
 with col1:
-    option_1 = st.selectbox("精力充沛", ["请选择", "精力充沛"], index=0, key="1")
+    option_1 = st.selectbox("精力充沛", ["", "精力充沛"], index=0, key="1", help="请选择您的疲劳状态")
 with col2:
-    option_2 = st.selectbox("稍感疲惫", ["请选择", "稍感疲惫"], index=0, key="2")
+    option_2 = st.selectbox("稍感疲惫", ["", "稍感疲惫"], index=0, key="2", help="请选择您的疲劳状态")
 with col3:
-    option_3 = st.selectbox("非常疲劳", ["请选择", "非常疲劳"], index=0, key="3")
+    option_3 = st.selectbox("非常疲劳", ["", "非常疲劳"], index=0, key="3", help="请选择您的疲劳状态")
 
 # 评估按钮
 if st.button("评估"):
     selected = None
-    if option_1 != "请选择":
+    if option_1 != "":
         selected = option_1
-    elif option_2 != "请选择":
+    elif option_2 != "":
         selected = option_2
-    elif option_3 != "请选择":
+    elif option_3 != "":
         selected = option_3
 
     if selected:
-        st.success(f"您的疲劳水平自评为 {selected}，正在进行评估...")
+        st.success(f"您的疲劳水平自评为：{selected}，正在进行评估...")
     else:
         st.warning("请先选择您的疲劳水平！")
         # 请确保 fatigue_prediction 函数已定义
