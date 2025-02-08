@@ -320,33 +320,29 @@ st.subheader("参数信息")
 st.write(input_data)
 
 
-import streamlit as st
-
-# 设置标题
-st.title("作业员疲劳状态简易评估问卷")
-
-# 说明
-st.write("""
-请根据您当前的感受选择最符合的答案。
-""")
+# 使用 columns 来并列显示问题
+col1, col2, col3 = st.columns(3)
 
 # 问题1：身体疲劳
-body_fatigue = st.selectbox(
-    "1. 您是否感到身体上的疲劳或乏力？",
-    ['完全没有', '偶尔', '经常', '总是']
-)
+with col1:
+    body_fatigue = st.selectbox(
+        "1. 身体疲劳",
+        ['完全没有', '偶尔', '经常', '总是']
+    )
 
 # 问题2：注意力集中
-cognitive_fatigue = st.selectbox(
-    "2. 您是否感到难以集中注意力？",
-    ['完全没有', '偶尔', '经常', '总是']
-)
+with col2:
+    cognitive_fatigue = st.selectbox(
+        "2. 注意力集中",
+        ['完全没有', '偶尔', '经常', '总是']
+    )
 
 # 问题3：情绪疲劳
-emotional_fatigue = st.selectbox(
-    "3. 您是否感到情绪疲惫或压力过大？",
-    ['完全没有', '偶尔', '经常', '总是']
-)
+with col3:
+    emotional_fatigue = st.selectbox(
+        "3. 情绪疲劳",
+        ['完全没有', '偶尔', '经常', '总是']
+    )
 
 # 根据选项得分
 def calculate_score(answer):
@@ -361,6 +357,9 @@ def calculate_score(answer):
 
 # 计算总得分
 score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
+
+# 显示结果
+st.write(f"您的疲劳总分：{score}")
 
 if score <= 3:
     st.write("您的疲劳感较轻，状态较好。")
