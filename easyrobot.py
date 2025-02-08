@@ -61,24 +61,31 @@ def save_to_csv(input_data, result):
         "timestamp": timestamp  # 增加时间戳
     }
     df = pd.DataFrame([data])
-   # 获取文件的现有内容
-    existing_content = get_file_content(FILE_PATH)
-    if existing_content is None:
-        st.error("无法从 GitHub 获取现有数据，无法保存新数据。")
-        return
 
-    # 使用 io.StringIO 而不是 pd.compat.StringIO
-    existing_df = pd.read_csv(io.StringIO(existing_content))
+    # 检查文件是否存在
+    if os.path.exists(file_path):
+        existing_content = get_file_content(file_path)
+        
+        # 检查文件是否为空
+        if existing_content.strip():
+            # 文件内容非空，读取数据
+            existing_df = pd.read_csv(io.StringIO(existing_content))
+        else:
+            # 如果文件为空，初始化空的 DataFrame
+            existing_df = pd.DataFrame(columns=['timestamp', 'input_data', 'result'])
+    else:
+        # 文件不存在，初始化空的 DataFrame
+        existing_df = pd.DataFrame(columns=['timestamp', 'input_data', 'result'])
 
+    # 假设 input_data 和 result 已经准备好
+    new_data = {'timestamp': pd.Timestamp.now(), 'input_data': input_data, 'result': result}
+    new_df = pd.DataFrame([new_data])
 
-    # 追加新数据
-    updated_df = pd.concat([existing_df, df], ignore_index=True)
+    # 合并现有的 DataFrame 和新数据
+    updated_df = pd.concat([existing_df, new_df], ignore_index=True)
 
-    # 保存合并后的数据到 GitHub
-    print(f"Saving file to: {FILE_PATH}")
-    updated_df.to_csv(FILE_PATH, index=False)
-
-    upload_to_github(FILE_PATH)
+    # 保存更新后的 DataFrame 到 CSV 文件
+    updated_df.to_csv(file_path, index=False)
 
 # 修改后的上传函数，不会覆盖文件
 def upload_to_github(file_path):
