@@ -406,6 +406,76 @@ if st.button("评估"):
         if 'client' in st.session_state:
             del st.session_state.client  # 删除旧的 Ark 客户端
 
+                # 更新标准舒适范围，使其列名与输入数据表格的列名一致
+        comfort_ranges = {
+            "颈部前屈": (0, 40),
+            "颈部后仰": (0, 40),
+            "肩部上举范围": (0, 120),  # 修改为与input_data一致
+            "肩部前伸范围": (0, 90),  # 修改为与input_data一致
+            "肘部屈伸": (0, 150),
+            "手腕背伸": (0, 60),
+            "手腕桡偏/尺偏": (0, 15),
+            "背部屈曲范围": (0, 45)  # 修改为与input_data一致
+        }
+
+
+        # 判断输入角度是否超出舒适范围，并评估风险
+        def evaluate_risk(input_data, comfort_ranges):
+            risks = {}
+            # 从input_data提取每个部位的角度
+            for joint in comfort_ranges.keys():
+                angle = input_data[joint].iloc[0]  # 获取用户输入的角度
+                min_angle, max_angle = comfort_ranges[joint]
+
+                if angle < min_angle:
+                    risks[joint] = "低风险"
+                elif angle > max_angle:
+                    risks[joint] = "高风险"
+                else:
+                    risks[joint] = "适宜范围"
+
+            return risks
+
+
+        # 评估风险
+        risks = evaluate_risk(input_data, comfort_ranges)
+
+        # 输出风险评估结果
+        st.subheader("风险评估结果")
+        for joint, risk in risks.items():
+            st.write(f"{joint}: {risk}")
+
+        # 风险级别映射到数值
+        risk_values = {"适宜范围": 0, "低风险": 1, "高风险": 2}
+        numeric_risks = [risk_values[risk] for risk in risks.values()]
+
+        # 设置颜色映射
+        color_map = sns.color_palette("coolwarm", as_cmap=True)
+
+        # 绘制热力图
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # 调整图表背景色为透明
+        sns.heatmap(np.array([numeric_risks]).reshape(1, -1), annot=True, cmap=color_map, cbar=True,
+                    xticklabels=risks.keys(), yticklabels=["风险"], ax=ax,
+                    linewidths=0.5, linecolor="lightgray", cbar_kws={"label": "风险等级"})
+
+        # 设置标题，字体更加现代化
+        ax.set_title("各部位风险评估", fontsize=18, fontweight='bold', family='Arial')
+        ax.set_xlabel("部位", fontsize=14, fontweight='bold', family='Arial')
+        ax.set_ylabel("风险级别", fontsize=14, fontweight='bold', family='Arial')
+
+        # 设置坐标轴标签字体大小
+        ax.tick_params(axis='both', which='major', labelsize=12, labelrotation=45)
+
+        # 优化颜色条
+        colorbar = ax.collections[0].colorbar
+        colorbar.set_ticks([0, 1, 2])  # 设置颜色条刻度
+        colorbar.ax.tick_params(labelsize=12)
+
+        # 展示图表
+        st.pyplot(fig)
+        
 if st.button("开始 AI 分析"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
