@@ -332,7 +332,6 @@ user_fatigue = st.radio(
 # 评估按钮
 if st.button("评估"):
     st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
-关键点：
     # 请确保 fatigue_prediction 函数已定义
     result = fatigue_prediction(input_data)
     st.success(f"评估结果：{result}")
