@@ -369,7 +369,7 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
-        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result)
         upload_to_github(FILE_PATH)
@@ -406,6 +406,14 @@ if st.button("开始 AI 分析"):
             st.session_state.client = Ark(api_key=API_KEY)  # 请确保 Ark 客户端正确初始化
         except Exception as e:
             st.error(f"初始化 Ark 客户端时出错：{e}")
+    
+    # 这里可以进行 AI 分析的逻辑处理
+    if 'client' in st.session_state:
+        client = st.session_state.client
+        # 通过客户端进行 AI 分析，存储在 session_state 中
+        ai_result = client.analyze_fatigue(st.session_state.result)  # 假设您有一个方法来进行分析
+        st.session_state.ai_analysis_result = ai_result
+        st.write(f"AI 分析结果：{ai_result}")
 
      # AI 分析逻辑
     if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
