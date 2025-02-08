@@ -358,9 +358,8 @@ def calculate_score(answer):
     else:  # 总是
         return 4
 
-# 按钮点击后的逻辑
 if st.button("评估"):
-    # 如果用户未选择所有问题，则提示
+# 如果用户未选择所有问题，则提示
     if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
         st.warning("请先选择所有问题的答案！")
     else:
@@ -369,7 +368,7 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result)
         upload_to_github(FILE_PATH)
@@ -378,7 +377,7 @@ if st.button("评估"):
         record = input_data.copy()
         record["评估"] = result
         st.session_state.predictions.append(record)
-    
+
         # 重置 AI 分析相关的会话状态
         st.session_state.ai_analysis_result = None
         st.session_state.messages = []
@@ -389,31 +388,21 @@ if st.button("评估"):
             del st.session_state.API_KEY
         if 'client' in st.session_state:
             del st.session_state.client  # 删除旧的 Ark 客户端
-
-
-# 显示 AI 分析按钮
+显示 AI 分析按钮
 if st.button("开始 AI 分析"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
     st.info("生成潜在人因危害分析及改善建议：")
     # 直接使用预设的API密钥
-    API_KEY = "5a5bd8a8-2257-4990-bac2-12b55ce17d4f"  # 直接设置 API_KEY
+    API_KEY = "5a5bd8a8-2257-4990-bac2-12b55ce17d4f" # 直接设置 API_KEY
     if API_KEY:
         st.session_state.API_KEY = API_KEY
         st.session_state.api_key_entered = True
         # 初始化 Ark 客户端并存储在会话状态中
         try:
-            st.session_state.client = Ark(api_key=API_KEY)  # 请确保 Ark 客户端正确初始化
+            st.session_state.client = Ark(api_key=API_KEY) # 请确保 Ark 客户端正确初始化
         except Exception as e:
             st.error(f"初始化 Ark 客户端时出错：{e}")
-    
-    # 这里可以进行 AI 分析的逻辑处理
-    if 'client' in st.session_state:
-        client = st.session_state.client
-        # 通过客户端进行 AI 分析，存储在 session_state 中
-        ai_result = client.analyze_fatigue(st.session_state.result)  # 假设您有一个方法来进行分析
-        st.session_state.ai_analysis_result = ai_result
-        st.write(f"AI 分析结果：{ai_result}")
 
      # AI 分析逻辑
     if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
