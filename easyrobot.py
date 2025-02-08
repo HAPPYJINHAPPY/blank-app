@@ -357,6 +357,9 @@ def calculate_score(answer):
         return 3
     else:  # 总是
         return 4
+# 如果评估结果存在，则显示绿色框
+if 'result' in st.session_state:
+    st.markdown(f"<div style='background-color:#DFF2BF; padding: 10px; border-radius: 5px; color:#4F8A10; font-size:16px;'>评估结果：{st.session_state.result}</div>", unsafe_allow_html=True)
 
 if st.button("评估"):
 # 如果用户未选择所有问题，则提示
@@ -388,9 +391,7 @@ if st.button("评估"):
             del st.session_state.API_KEY
         if 'client' in st.session_state:
             del st.session_state.client  # 删除旧的 Ark 客户端
-# 显示评估结果（存储在 session_state 中，确保结果持久化）
-if 'result' in st.session_state:
-    st.write(f"评估结果：{st.session_state.result}")
+
 if st.button("开始 AI 分析"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
