@@ -318,21 +318,26 @@ input_data = pd.DataFrame({
 })
 st.subheader("参数信息")
 st.write(input_data)
-
 # 使用 st.columns() 来实现横向排列
-col1, col2, col3= st.columns(3)
+col1, col2, col3 = st.columns(3)
 
-# 为每一列创建一个单选框选项
+# 将单选框放在同一组中，只显示选项
 with col1:
-    option_1 = st.radio("", ["精力充沛"], key="1", index=0)
+    option_1 = "精力充沛"
 with col2:
-    option_2 = st.radio("", ["稍感疲惫"], key="2", index=0)
+    option_2 = "稍感疲惫"
 with col3:
-    option_3 = st.radio("", ["非常疲劳"], key="3", index=0)
+    option_3 = "非常疲劳"
+
+# 创建一个单选框，将所有选项合并
+user_fatigue = st.radio(
+    "请选择您的疲劳水平", 
+    options=[option_1, option_2, option_3]
+)
 
 # 评估按钮
 if st.button("评估"):
-    # 这里是评估逻辑
+    # 显示用户选择的疲劳水平
     st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
     # 请确保 fatigue_prediction 函数已定义
     result = fatigue_prediction(input_data)
