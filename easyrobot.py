@@ -212,16 +212,15 @@ set_font_properties(ax, font_prop)
 with open("fatigue_model.pkl", "wb") as f:
     pickle.dump(model, f)
 
-# Streamlit sidebar
-if st.sidebar.checkbox("Show Model Performance"):
-    st.subheader("Model Performance Evaluation")
-    st.write(f"Accuracy: {accuracy}")
-    st.write("Confusion Matrix:")
+# Streamlit 侧边栏
+if st.sidebar.checkbox("模型性能"):
+    st.subheader("模型性能评估")
+    st.write(f"准确率: {accuracy}")
+    st.write("混淆矩阵:")
     st.write(conf_matrix)
-    st.write("Classification Report:")
+    st.write("分类报告:")
     st.text(report)
     st.pyplot(fig)
-
 
 @st.cache_resource
 def load_model():
