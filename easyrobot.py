@@ -368,8 +368,6 @@ if st.button("评估"):
     else:
         # 计算总得分
         score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
-        st.success(f"您的疲劳水平自评为：{score}，正在进行评估...")
-
         # 显示结果
         if score <= 3:
             st.write("您的疲劳感较轻，状态较好。")
