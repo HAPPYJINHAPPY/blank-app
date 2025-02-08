@@ -327,26 +327,31 @@ col1, col2, col3 = st.columns(3)
 with col1:
     body_fatigue = st.selectbox(
         "1. 身体疲劳",
-        ['完全没有', '偶尔', '经常', '总是']
+        ['请选择', '完全没有', '偶尔', '经常', '总是'],
+        index=0  # 初始状态为未选择（'请选择'）
     )
 
 # 问题2：注意力集中
 with col2:
     cognitive_fatigue = st.selectbox(
         "2. 注意力集中",
-        ['完全没有', '偶尔', '经常', '总是']
+        ['请选择', '完全没有', '偶尔', '经常', '总是'],
+        index=0  # 初始状态为未选择（'请选择'）
     )
 
 # 问题3：情绪疲劳
 with col3:
     emotional_fatigue = st.selectbox(
         "3. 情绪疲劳",
-        ['完全没有', '偶尔', '经常', '总是']
+        ['请选择', '完全没有', '偶尔', '经常', '总是'],
+        index=0  # 初始状态为未选择（'请选择'）
     )
 
 # 根据选项得分
 def calculate_score(answer):
-    if answer == '完全没有':
+    if answer == '请选择':
+        return 0  # 未选择时，得分为 0
+    elif answer == '完全没有':
         return 1
     elif answer == '偶尔':
         return 2
@@ -359,15 +364,17 @@ def calculate_score(answer):
 score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
 
 # 显示结果
-st.write(f"您的疲劳总分：{score}")
-
-if score <= 3:
-    st.write("您的疲劳感较轻，状态较好。")
-elif 4 <= score <= 6:
-    st.write("您的疲劳感中等，建议适当休息。")
+if score == 0:
+    st.write("请回答所有问题。")
 else:
-    st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
+    st.write(f"您的疲劳总分：{score}")
 
+    if score <= 3:
+        st.write("您的疲劳感较轻，状态较好。")
+    elif 4 <= score <= 6:
+        st.write("您的疲劳感中等，建议适当休息。")
+    else:
+        st.write("您的疲劳感较重，建议立即休息并评估工作安排。")
 # 评估按钮
 if st.button("评估"):
         st.success(f"您的疲劳水平自评为：{score}，正在进行评估...")
