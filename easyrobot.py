@@ -320,45 +320,44 @@ st.subheader("参数信息")
 st.write(input_data)
 
 # 使用 st.columns() 来实现横向排列
-col1, col2, col3 = st.columns(
-3
+col1, col2, col3 = st.columns(3)
+
+# 创建一个单选框，将所有选项放入同一个单选框组件
+user_fatigue = st.radio(
+    "请选择您的疲劳水平", 
+    options=["请选择", "精力充沛", "稍感疲惫", "非常疲劳"],
+    index=0  # 初始选中"请选择"
 )
 
-# 创建一个单选框，在同一行显示所有选项，并确保初始没有选中
-user_fatigue = st.radio(
-    "请选择您的疲劳水平"
-, 
-    options=[
-"请选择", "精力充沛", "稍感疲惫", "非常疲劳"
-],
-    index=0  # 初始时选中"请选择"
-)
 # 评估按钮
 if st.button("评估"):
-    st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
-    # 请确保 fatigue_prediction 函数已定义
-    result = fatigue_prediction(input_data)
-    st.success(f"评估结果：{result}")
-    timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # 保存数据到本地 CSV 文件
-    save_to_csv(input_data, result)
-    upload_to_github(FILE_PATH)
-    # 保存评估结果到会话状态
-    st.session_state.result = result
-    record = input_data.copy()
-    record["评估"] = result
-    st.session_state.predictions.append(record)
-
-    # 重置 AI 分析相关的会话状态
-    st.session_state.ai_analysis_result = None
-    st.session_state.messages = []
-    st.session_state.show_ai_analysis = True
-    # 不再要求用户输入API密钥
-    st.session_state.api_key_entered = False
-    if 'API_KEY' in st.session_state:
-        del st.session_state.API_KEY
-    if 'client' in st.session_state:
-        del st.session_state.client  # 删除旧的 Ark 客户端
+    if user_fatigue == "请选择":
+        st.warning("请先选择您的疲劳水平！")
+    else:
+        st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
+        # 请确保 fatigue_prediction 函数已定义
+        result = fatigue_prediction(input_data)
+        st.success(f"评估结果：{result}")
+        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # 保存数据到本地 CSV 文件
+        save_to_csv(input_data, result)
+        upload_to_github(FILE_PATH)
+        # 保存评估结果到会话状态
+        st.session_state.result = result
+        record = input_data.copy()
+        record["评估"] = result
+        st.session_state.predictions.append(record)
+    
+        # 重置 AI 分析相关的会话状态
+        st.session_state.ai_analysis_result = None
+        st.session_state.messages = []
+        st.session_state.show_ai_analysis = True
+        # 不再要求用户输入API密钥
+        st.session_state.api_key_entered = False
+        if 'API_KEY' in st.session_state:
+            del st.session_state.API_KEY
+        if 'client' in st.session_state:
+            del st.session_state.client  # 删除旧的 Ark 客户端
 
 
 # 显示 AI 分析按钮
