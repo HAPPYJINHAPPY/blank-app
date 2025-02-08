@@ -319,33 +319,42 @@ input_data = pd.DataFrame({
 st.subheader("参数信息")
 st.write(input_data)
 
-# 疲劳评估按钮
-if st.button("评估"):
-    with st.spinner("正在评估，请稍等..."):
-        # 假设 input_data 已经被定义并包含所有必要的数据
-        # 请确保 fatigue_prediction 函数已定义
-        result = fatigue_prediction(input_data)
-        st.success(f"评估结果：{result}")
-        timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # 保存数据到本地 CSV 文件
-        save_to_csv(input_data, result)
-        upload_to_github(FILE_PATH)
-        # 保存评估结果到会话状态
-        st.session_state.result = result
-        record = input_data.copy()
-        record["评估"] = result
-        st.session_state.predictions.append(record)
 
-        # 重置 AI 分析相关的会话状态
-        st.session_state.ai_analysis_result = None
-        st.session_state.messages = []
-        st.session_state.show_ai_analysis = True
-        # 不再要求用户输入API密钥
-        st.session_state.api_key_entered = False
-        if 'API_KEY' in st.session_state:
-            del st.session_state.API_KEY
-        if 'client' in st.session_state:
-            del st.session_state.client  # 删除旧的 Ark 客户端
+# 创建一个自评滑块
+user_fatigue = st.slider("请评估您自己的疲劳程度", min_value=0, max_value=10, step=1)
+
+# 评估按钮
+if st.button("评估"):
+    # 检查用户是否已经做出了自评
+    if user_fatigue == 0:
+        st.warning("请先评估您的疲劳水平！")
+    else:
+        with st.spinner("正在评估，请稍等..."):
+            # 这里是评估逻辑
+            st.success(f"您的疲劳水平自评为 {user_fatigue}，正在进行评估...")
+            # 请确保 fatigue_prediction 函数已定义
+            result = fatigue_prediction(input_data)
+            st.success(f"评估结果：{result}")
+            timestamp = timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # 保存数据到本地 CSV 文件
+            save_to_csv(input_data, result)
+            upload_to_github(FILE_PATH)
+            # 保存评估结果到会话状态
+            st.session_state.result = result
+            record = input_data.copy()
+            record["评估"] = result
+            st.session_state.predictions.append(record)
+    
+            # 重置 AI 分析相关的会话状态
+            st.session_state.ai_analysis_result = None
+            st.session_state.messages = []
+            st.session_state.show_ai_analysis = True
+            # 不再要求用户输入API密钥
+            st.session_state.api_key_entered = False
+            if 'API_KEY' in st.session_state:
+                del st.session_state.API_KEY
+            if 'client' in st.session_state:
+                del st.session_state.client  # 删除旧的 Ark 客户端
 
 
 # 显示 AI 分析按钮
