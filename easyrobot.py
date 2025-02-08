@@ -322,19 +322,26 @@ st.write(input_data)
 # 使用 st.columns() 来实现横向排列
 col1, col2, col3 = st.columns(3)
 
-# 这里创建一个标签但没有勾选默认选项
+# 使用 st.selectbox 来实现横向排列
 with col1:
-    option_1 = st.radio("", ["精力充沛"], index=-1, key="1", label_visibility="collapsed")
+    option_1 = st.selectbox("精力充沛", ["请选择", "精力充沛"], index=0, key="1")
 with col2:
-    option_2 = st.radio("", ["稍感疲惫"], index=-1, key="2", label_visibility="collapsed")
+    option_2 = st.selectbox("稍感疲惫", ["请选择", "稍感疲惫"], index=0, key="2")
 with col3:
-    option_3 = st.radio("", ["非常疲劳"], index=-1, key="3", label_visibility="collapsed")
+    option_3 = st.selectbox("非常疲劳", ["请选择", "非常疲劳"], index=0, key="3")
 
-# 使用一个按钮进行评估
+# 评估按钮
 if st.button("评估"):
-    if option_1 or option_2 or option_3:
-        # 检查哪个选项被选中并进行评估
-        st.success(f"您的疲劳水平自评为 {option_1 or option_2 or option_3}，正在进行评估...")
+    selected = None
+    if option_1 != "请选择":
+        selected = option_1
+    elif option_2 != "请选择":
+        selected = option_2
+    elif option_3 != "请选择":
+        selected = option_3
+
+    if selected:
+        st.success(f"您的疲劳水平自评为 {selected}，正在进行评估...")
     else:
         st.warning("请先选择您的疲劳水平！")
         # 请确保 fatigue_prediction 函数已定义
