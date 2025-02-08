@@ -13,6 +13,8 @@ import base64
 import requests
 import datetime
 import io
+import pytz
+
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 从 Streamlit secrets 中获取 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
 GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
@@ -46,7 +48,8 @@ def get_file_sha(file_path):
 # 保存数据到 CSV 文件
 def save_to_csv(input_data, result):
     # 获取当前时间戳
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    tz = pytz.timezone('Asia/Shanghai')
+    timestamp = datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
 
     data = {
         "颈部前屈": int(input_data["颈部前屈"].values[0]),
