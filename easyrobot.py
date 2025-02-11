@@ -8,12 +8,13 @@ import seaborn as sns
 import streamlit as st
 from matplotlib import font_manager
 import os
-from volcenginesdkarkruntime import Ark
+from openai import OpenAI
 import base64
 import requests
 import datetime
 import io
 import pytz
+
 
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 从 Streamlit secrets 中获取 GitHub 令牌
 GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
@@ -300,12 +301,11 @@ def fatigue_prediction(input_data):
     return ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
 
 
-# 定义聊天调用函数
 def call_ark_api(client, messages):
     try:
         ark_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
         completion = client.chat.completions.create(
-            model="ep-20241226165134-6lpqj",
+            model="deepseek-ai/DeepSeek-V2.5",
             messages=ark_messages,
             stream=True
         )
@@ -410,18 +410,19 @@ if st.button("开始 AI 分析"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
     st.info("生成潜在人因危害分析及改善建议：")
-    # 直接使用预设的API密钥
-    API_KEY = "5a5bd8a8-2257-4990-bac2-12b55ce17d4f" # 直接设置 API_KEY
+    API_KEY = "sk-zyiqsryunuwkjonzywoqfwzksxmxngwgdqaagdscgzepnlal" # 直接设置 API_KEY
+    client = OpenAI(api_key=API_KEY,
+                    base_url="https://api.siliconflow.cn/v1")
     if API_KEY:
         st.session_state.API_KEY = API_KEY
         st.session_state.api_key_entered = True
         # 初始化 Ark 客户端并存储在会话状态中
         try:
-            st.session_state.client = Ark(api_key=API_KEY) # 请确保 Ark 客户端正确初始化
+            st.session_state.client = OpenAI(api_key=API_KEY,base_url="https://api.siliconflow.cn/v1")# 请确保 Ark 客户端正确初始化
         except Exception as e:
             st.error(f"初始化 Ark 客户端时出错：{e}")
 
-     # AI 分析逻辑
+    # AI 分析逻辑
     if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
         # 检查疲劳评估结果是否存在
         if "result" not in st.session_state:
@@ -438,7 +439,7 @@ if st.button("开始 AI 分析"):
                                f"请判断用户的疲劳程度，基于数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
 
                     st.session_state.messages = [
-                        {"role": "system", "content": "你是一个疲劳评估助手，基于用户的疲劳状态和角度数据提供建议。"},
+                        {"role": "system", "content": "你是一个人因工程专家，请根据国际人因标准对用户的疲劳状态和工作最大角度数据提供建议。回答尽量简洁，但需要描述清晰有依据，每次回答总字数不超过 500 字。"},
                         {"role": "user", "content": ai_input}
                     ]
 
