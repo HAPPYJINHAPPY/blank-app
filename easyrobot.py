@@ -213,43 +213,188 @@ set_font_properties(ax, font_prop)
 with open("fatigue_model.pkl", "wb") as f:
     pickle.dump(model, f)
 
-# Streamlit 侧边栏
+# 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
-    st.subheader("模型性能评估")
-    st.write(f"准确率: {accuracy}")
-    st.write("混淆矩阵:")
-    st.write(conf_matrix)
-    st.write("分类报告:")
-    st.text(report)
+    st.subheader("📊 模型评估")
+
+    # 使用 st.columns 创建多列布局
+    col1, col2 = st.columns(2)
+
+    # 第一列：准确性
+    with col1:
+        st.markdown("""
+        <div style="
+            background-color: #F0F2F6;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        ">
+            <div style="
+                font-size: 32px;
+                font-weight: bold;
+                color: #2E86C1;
+            ">
+                {:.2f}%
+            </div>
+            <div style="
+                font-size: 16px;
+                color: #666;
+            ">
+                准确性
+            </div>
+        </div>
+        """.format(accuracy * 100), unsafe_allow_html=True)
+
+    # 第二列：分类报告
+    with col2:
+        st.markdown("""
+        <div style="
+            background-color: #F0F2F6;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            margin-bottom: 20px;
+        ">
+            <strong>分类报告</strong><br>
+            <pre>{}</pre>
+        </div>
+        """.format(report), unsafe_allow_html=True)
+
+    # 混淆矩阵
+    st.markdown("### 混淆矩阵")
+    fig_conf, ax_conf = plt.subplots()
+    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", ax=ax_conf)
+    ax_conf.set_xlabel("Predicted")
+    ax_conf.set_ylabel("Actual")
+    ax_conf.set_title("Confusion Matrix")
+    st.pyplot(fig_conf)
+
+    # 特征重要性
+    st.markdown("### 特征重要性")
     st.pyplot(fig)
 
+    # 添加一些说明
+    st.markdown("""
+    <div style="
+        background-color: #E8F5E9;
+        padding: 15px;
+        border-radius: 10px;
+        color: #2E7D32;
+        margin-top: 20px;
+    ">
+        💡 提示：
+        <ul>
+            <li>混淆矩阵显示了模型的预测结果与实际标签的对比。对角线上的值表示正确预测的数量。</li>
+            <li>特征重要性图展示了每个特征对模型预测的贡献程度。</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 @st.cache_resource
 def load_model():
     with open("fatigue_model.pkl", "rb") as f:
         model = pickle.load(f)
     return model
 
-
 model = load_model()
 # Streamlit sidebar
 if st.sidebar.checkbox("标准参考"):
-    st.markdown("""各动作的舒适范围：  
-    颈部前屈舒适范围：0°到40°  
-    颈部后仰舒适范围：0°到40°    
-    肩部上举舒适范围：0°到120°（过度上举可能导致肩部肌肉疲劳和肩袖损伤风险）  
-    肩部前伸舒适范围：0°到90°  
-    肘部屈伸舒适范围：0°到150°   
-    手腕背伸舒适范围：0°到60°  
-    手腕桡偏 / 尺偏舒适范围：0°到15°（任何超过此角度都容易造成腕管综合症或肌腱问题）  
-    背部屈曲舒适范围：0°到45°   
-    重复频率（次/分钟）:   
-    0 - 20 低疲劳，低风险，适合大多数日常活动  
-    20 - 40 中疲劳，中等风险，长时间重复可能导致肌肉疲劳  
-    > 40 高疲劳，高风险，极容易导致肌肉劳损、骨骼疲劳和长期伤害  
-    参考文献和来源：  
-    ISO 11228-3:2003: 适用于评估高重复频率和大范围的手臂、肩膀和颈部动作对工作者的影响。  
-    NIOSH: 美国国家职业安全健康研究所关于工作任务和重复动作的疲劳评估模型。  
-    OSHA: 美国职业安全健康管理局的工作条件和疲劳评估准则。""")
+    st.markdown("""
+    <style>
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2E86C1;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A5276;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .sub-section {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        .note {
+            font-style: italic;
+            color: #666;
+            margin-top: 5px;
+        }
+        .highlight {
+            color: #E74C3C;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+
+    <div class="header">人体各部位动作舒适范围参考指南</div>
+    <div class="note">为了帮助您在日常工作或活动中保持健康的姿势，减少肌肉疲劳和关节损伤风险，以下是根据国际人因工程标准（如ISO 11226、ISO 9241等）整理的人体各部位动作舒适范围建议。请参考这些数据，优化您的姿势和工作环境设计。</div>
+
+    <div class="section-title">1. 颈部</div>
+    <div class="sub-section">
+        - <span class="highlight">前屈（低头）</span>：0°~20°<br>
+          <div class="note">（长时间前屈＞20°可能导致颈椎压力累积）</div>
+        - <span class="highlight">后仰（抬头）</span>：0°~15°<br>
+          <div class="note">（＞15°可能增加颈椎间盘压力，需避免静态保持）</div>
+    </div>
+
+    <div class="section-title">2. 肩部</div>
+    <div class="sub-section">
+        - <span class="highlight">上举（手臂抬高）</span>：0°~90°<br>
+          <div class="note">（持续上举＞90°显著增加肩袖损伤风险，动态操作可偶尔达120°但需减少频率）</div>
+        - <span class="highlight">前伸（手臂前伸）</span>：0°~30°<br>
+          <div class="note">（＞30°易导致肩部肌肉疲劳，重复性任务应控制在15°以内）</div>
+    </div>
+
+    <div class="section-title">3. 肘部</div>
+    <div class="sub-section">
+        - <span class="highlight">屈伸（弯曲/伸直）</span>：60°~120°<br>
+          <div class="note">（完全伸展或过度弯曲（如＞120°）会增加肌腱压力，中立位更安全）</div>
+    </div>
+
+    <div class="section-title">4. 手腕</div>
+    <div class="sub-section">
+        - <span class="highlight">背伸（手腕向上）</span>：0°~25°<br>
+          <div class="note">（＞25°可能压迫腕管，ISO建议保持中立位附近）</div>
+        - <span class="highlight">桡偏/尺偏（左右偏转）</span>：0°~15°<br>
+          <div class="note">（超过15°容易造成腕管综合征或肌腱问题，需避免重复性极端偏转）</div>
+    </div>
+
+    <div class="section-title">5. 背部（腰椎）</div>
+    <div class="sub-section">
+        - <span class="highlight">屈曲（弯腰）</span>：0°~20°<br>
+          <div class="note">（＞20°显著增加椎间盘压力，需配合髋关节活动以减少负荷）</div>
+    </div>
+
+    <div class="section-title">附加建议</div>
+    <div class="sub-section">
+        - <span class="highlight">动态任务</span>：优先采用中关节活动范围（如肩部上举60°~90°），避免极端姿势。<br>
+        - <span class="highlight">静态保持</span>：任何姿势超过2分钟需设计支撑（如肘托、腰靠）。<br>
+        - <span class="highlight">人机交互</span>：调整工作站高度、键盘倾斜度等，使关节自然接近中立位。
+    </div>
+
+    <div class="section-title">健康建议</div>
+    <div class="sub-section">
+        - 定期调整姿势，避免长时间保持同一姿势。<br>
+        - 使用符合人因工程设计的工具和设备（如可调节桌椅、腕托等）。<br>
+        - 结合适当的伸展运动，缓解肌肉疲劳。
+    </div>
+
+    <div class="footer">通过遵循以上建议，您可以有效减少肌肉骨骼疾病的风险，提升工作效率和舒适度。</div>
+    """, unsafe_allow_html=True)
+
+# 使用 Markdown 居中标题
+st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
+st.markdown("""模型参考ISO 11226: Static working postures、NIOSH Guidelines for Manual Material Handling、
+OWAS Analysis and Recommendations.等国际标准""")
+
 
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
