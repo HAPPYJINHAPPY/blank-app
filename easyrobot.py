@@ -216,35 +216,36 @@ with open("fatigue_model.pkl", "wb") as f:
 # 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
     st.subheader("📊 模型评估")
+import streamlit as st
 
-    # 使用 st.columns 创建多列布局
-    col1= st.columns(1)
+# 使用 st.columns 创建一列布局
+col1 = st.columns(1)
 
-    # 第一列：准确性
-    with col1:
-        st.markdown("""
+# 在第一列中放置内容
+with col1[0]:
+    st.markdown("""
+    <div style="
+        background-color: #F0F2F6;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+    ">
         <div style="
-            background-color: #F0F2F6;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #2E86C1;
         ">
-            <div style="
-                font-size: 32px;
-                font-weight: bold;
-                color: #2E86C1;
-            ">
-                {:.2f}%
-            </div>
-            <div style="
-                font-size: 16px;
-                color: #666;
-            ">
-                准确性
-            </div>
+            {:.2f}%
         </div>
-        """.format(accuracy * 100), unsafe_allow_html=True)
+        <div style="
+            font-size: 16px;
+            color: #666;
+        ">
+            准确性
+        </div>
+    </div>
+    """.format(accuracy * 100), unsafe_allow_html=True)
 
     # 混淆矩阵
     st.markdown("### 混淆矩阵")
