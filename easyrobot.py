@@ -218,7 +218,7 @@ if st.sidebar.checkbox("模型性能"):
     st.subheader("📊 模型评估")
 
     # 使用 st.columns 创建多列布局
-    col1, col2 = st.columns(2)
+    col1= st.columns(1)
 
     # 第一列：准确性
     with col1:
@@ -245,21 +245,6 @@ if st.sidebar.checkbox("模型性能"):
             </div>
         </div>
         """.format(accuracy * 100), unsafe_allow_html=True)
-
-    # 第二列：分类报告
-    with col2:
-        st.markdown("""
-        <div style="
-            background-color: #F0F2F6;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: monospace;
-            margin-bottom: 20px;
-        ">
-            <strong>分类报告</strong><br>
-            <pre>{}</pre>
-        </div>
-        """.format(report), unsafe_allow_html=True)
 
     # 混淆矩阵
     st.markdown("### 混淆矩阵")
