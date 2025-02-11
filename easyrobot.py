@@ -375,8 +375,7 @@ if st.sidebar.checkbox("标准参考"):
 
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
-st.markdown("""模型参考ISO 11226: Static working postures、NIOSH Guidelines for Manual Material Handling、
-OWAS Analysis and Recommendations.等国际标准，以评估工作过程中的疲劳状态""")
+st.markdown("""该工具依据国际标准ISO 11226（静态工作姿势）、美国国家职业安全健康研究所的《手动材料处理指南》以及OWAS分析与建议等多套国际标准和规范，对工作过程中的疲劳状态进行科学评估。""")
 
 # 初始化存储所有预测记录的列表
 if 'predictions' not in st.session_state:
