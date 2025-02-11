@@ -220,29 +220,29 @@ if st.sidebar.checkbox("模型性能"):
     col1 = st.columns(1)
     # 在第一列中放置内容
     with col1[0]:
-    st.markdown("""
-    <div style="
-        background-color: #F0F2F6;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        margin-bottom: 20px;
-    ">
+        st.markdown("""
         <div style="
-            font-size: 32px;
-            font-weight: bold;
-            color: #2E86C1;
+            background-color: #F0F2F6;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
         ">
-            {:.2f}%
+            <div style="
+                font-size: 32px;
+                font-weight: bold;
+                color: #2E86C1;
+            ">
+                {:.2f}%
+            </div>
+            <div style="
+                font-size: 16px;
+                color: #666;
+            ">
+                准确性
+            </div>
         </div>
-        <div style="
-            font-size: 16px;
-            color: #666;
-        ">
-            准确性
-        </div>
-    </div>
-    """.format(accuracy * 100), unsafe_allow_html=True)
+        """.format(accuracy * 100), unsafe_allow_html=True)
 
     # 混淆矩阵
     st.markdown("### 混淆矩阵")
