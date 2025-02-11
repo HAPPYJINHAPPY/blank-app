@@ -216,13 +216,10 @@ with open("fatigue_model.pkl", "wb") as f:
 # 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
     st.subheader("📊 模型评估")
-import streamlit as st
-
-# 使用 st.columns 创建一列布局
-col1 = st.columns(1)
-
-# 在第一列中放置内容
-with col1[0]:
+    # 使用 st.columns 创建一列布局
+    col1 = st.columns(1)
+    # 在第一列中放置内容
+    with col1[0]:
     st.markdown("""
     <div style="
         background-color: #F0F2F6;
