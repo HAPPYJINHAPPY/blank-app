@@ -559,12 +559,12 @@ if st.button("开始 AI 分析"):
             if st.session_state.ai_analysis_result is None:
                 try:
                     # 构造 AI 输入
-                    ai_input = f"用户的疲劳状态是：{st.session_state.result}。\n" \
+                    ai_input = f"用户{body_fatigue}身体感到无力，{cognitive_fatigue}影响睡眠，{emotional_fatigue}肌肉酸痛或不适。\n" \
                                f"用户提供的角度数据为：颈部前屈{neck_flexion}度，颈部后仰{neck_extension}度，" \
                                f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
                                f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
                                f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
-                               f"请判断用户的疲劳程度，基于数据给出用户的潜在人因危害分析及改善建议，并解释哪些地方是否需要优先改善。"
+                               f"请判断用户的疲劳程度，基于数据进行用户潜在人因危害分析并提供改善建议，考虑是否有需要改善的位置，优先改善哪些位置。"
 
                     st.session_state.messages = [
                         {"role": "system", "content": "你是一个人因工程专家，请根据国际人因标准对用户的疲劳状态和工作最大角度数据提供建议。回答尽量简洁，但需要描述清晰有依据，每次回答总字数不超过 500 字。"},
