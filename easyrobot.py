@@ -564,7 +564,7 @@ if st.button("开始 AI 分析"):
                                f"肩部上举范围{shoulder_elevation}度，肩部前伸范围{shoulder_forward}度，" \
                                f"肘部屈伸{elbow_flexion}度，手腕背伸{wrist_extension}度，" \
                                f"手腕桡偏/尺偏{wrist_deviation}度，背部屈曲范围{back_flexion}度。\n" \
-                               f"数据越大，则工作所需要的范围越大，请基于数据进行潜在人因危害分析并提供改善建议，如果需要改善的话需要优先改善哪些位置。"
+                               f"数据越大，则工作所需要的范围越大；数据越小，则可能不需要使用到该关节。请基于数据进行潜在人因危害分析并提供改善建议，如果需要改善的话需要优先改善哪些位置。"
 
                     st.session_state.messages = [
                         {"role": "system", "content": "你是一个人因工程专家，请根据国际人因标准对用户的疲劳状态和工作最大角度数据提供建议。回答简洁但需要描述清晰有依据。"},
