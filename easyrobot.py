@@ -455,7 +455,7 @@ input_data = pd.DataFrame({
 st.subheader("参数信息")
 st.write(input_data)
 
-
+st.subheader("主观感受")
 # 使用 columns 来并列显示问题
 col1, col2, col3 = st.columns(3)
 
