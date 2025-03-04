@@ -1,6 +1,5 @@
 streamlit
 httpx==0.23.3
-./volcengine_python_sdk-1.0.118-py3-none-any.whl
 pandas
 scikit-learn
 matplotlib
