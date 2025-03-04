@@ -10,10 +10,11 @@ requests
 OpenAI
 mediapipe
 Image
-opencv-python-headless
-mediapipe
-protobuf
 numpy
 pandas
 streamlit
 Pillow
+opencv-python-headless==4.9.0.80  # 使用最新稳定版
+numpy>=1.21.5
+mediapipe==0.10.9  # 使用兼容新版
+protobuf==3.20.3  # 强制指定版本
