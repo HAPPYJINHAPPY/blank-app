@@ -7,10 +7,15 @@ plotly
 openpyxl>=3.0.0
 pydantic
 requests
-OpenAI
 mediapipe
 Image
 numpy
 pandas
 streamlit
 Pillow
+openai
+mediapipe==0.10.9
+Pillow
+opencv-python-headless==4.9.0.80
+protobuf==3.20.3
+streamlit
