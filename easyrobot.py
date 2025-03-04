@@ -653,7 +653,6 @@ if st.sidebar.checkbox("数据测量", key="data_measurement_checkbox"):
         with col2:
             st.subheader("关节负荷分析")
             for joint, angle in metrics['angles'].items():
-                status = "⚠️" if angle > threshold else "✅"
                 st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
     else:
         st.info("请上传JPG/PNG格式的图片")
