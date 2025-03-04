@@ -236,34 +236,34 @@ def draw_landmarks(image, joints):
     # 颜色配置
     colors = {
         '颈部': (255, 200, 0),  # 金黄色
-        '肩膀': (0, 255, 0),  # 绿色
+        '肩部': (0, 255, 0),  # 绿色
         '肘部': (0, 255, 255),  # 青色
         '手腕': (255, 0, 255)  # 品红色
     }
 
     # 绘制颈部前屈
     nose = tuple(map(int, joints['鼻子'][:2]))
-    shoulder_mid = tuple(map(int, joints['中间']['肩膀'][:2]))
-    hip_mid = tuple(map(int, joints['中间']['臀部'][:2]))
+    shoulder_mid = tuple(map(int, joints['肩部中点'][:2]))
+    hip_mid = tuple(map(int, joints['髋部中点'][:2]))
     cv2.line(image, nose, shoulder_mid, colors['颈部'], 2)
     cv2.line(image, shoulder_mid, hip_mid, colors['颈部'], 2)
 
     # 绘制上肢
-    for side in ['左侧', '右侧']:
+    for side in ['左', '右']:
         # 肩-肘
-        pt1 = tuple(map(int, joints[side]['肩膀'][:2]))
-        pt2 = tuple(map(int, joints[side]['肘部'][:2]))
-        cv2.line(image, pt1, pt2, colors['肩膀'], 2)
+        pt1 = tuple(map(int, joints[f'{side}肩部'][:2]))
+        pt2 = tuple(map(int, joints[f'{side}肘部'][:2]))
+        cv2.line(image, pt1, pt2, colors['肩部'], 2)
 
         # 肘-腕
-        pt3 = tuple(map(int, joints[side]['肘部'][:2]))
-        pt4 = tuple(map(int, joints[side]['手腕'][:2]))
+        pt3 = tuple(map(int, joints[f'{side}肘部'][:2]))
+        pt4 = tuple(map(int, joints[f'{side}手腕'][:2]))
         cv2.line(image, pt3, pt4, colors['肘部'], 2)
 
         # 手部连线
-        if '手腕' in joints[side]:
-            pt5 = tuple(map(int, joints[side]['手腕'][:2]))
-            pt6 = tuple(map(int, joints[side]['食指尖端'][:2]))
+        if f'{side}手腕' in joints:
+            pt5 = tuple(map(int, joints[f'{side}手腕'][:2]))
+            pt6 = tuple(map(int, joints[f'{side}食指尖'][:2]))
             cv2.line(image, pt5, pt6, colors['手腕'], 2)
 
 # 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
