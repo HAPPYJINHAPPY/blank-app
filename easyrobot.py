@@ -19,13 +19,6 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image
 
-# 防止浏览器缓存导致的DOM问题
-st.markdown("""
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-""", unsafe_allow_html=True)
-
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 GITHUB_USERNAME = 'HAPPYJINHAPPY'
 GITHUB_REPO = 'blank-app'
@@ -788,7 +781,6 @@ def calculate_score(answer):
         return 4
 
 if st.button("评估"):
-    # 如果用户未选择所有问题，则提示
     if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
         st.warning("请先选择所有问题的答案！")
     else:
@@ -797,6 +789,8 @@ if st.button("评估"):
         # 请确保 fatigue_prediction 函数已定义
         result = fatigue_prediction(input_data)
         st.success(f"评估结果：{result}")
+        st.session_state.result = result
+        # st.rerun() 仅在需要时调用
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # 保存数据到本地 CSV 文件
         save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue)
