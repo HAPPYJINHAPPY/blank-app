@@ -458,7 +458,7 @@ with open("fatigue_model.pkl", "wb") as f:
     pickle.dump(model, f)
 
 # 在 Streamlit 中展示
-if st.sidebar.checkbox("模型性能"):
+if st.sidebar.checkbox("模型性能", key="model_performance_checkbox"):
     st.subheader("📊 模型评估")
     # 使用 st.columns 创建一列布局
     col1 = st.columns(1)
@@ -525,7 +525,7 @@ def load_model():
 
 model = load_model()
 # Streamlit sidebar
-if st.sidebar.checkbox("标准参考"):
+if st.sidebar.checkbox("标准参考", key="standard_reference_checkbox"):
     st.markdown("""
     <style>
         .header {
@@ -617,7 +617,7 @@ if st.sidebar.checkbox("标准参考"):
     <div class="footer">通过遵循以上建议，您可以有效减少肌肉骨骼疾病的风险，提升工作效率和舒适度。</div>
     """, unsafe_allow_html=True)
     
-if st.sidebar.checkbox("数据测量"):
+if st.sidebar.checkbox("数据测量", key="data_measurement_checkbox"):
     # Streamlit界面
     st.title("职业健康分析系统")
     st.markdown("""
@@ -629,7 +629,9 @@ if st.sidebar.checkbox("数据测量"):
     - 背部屈曲
     """)
     
-    uploaded_file = st.file_uploader("上传工作场景图", type=["jpg", "png"])
+    uploaded_file = st.file_uploader("上传工作场景图", 
+                               type=["jpg", "png"], 
+                               key="unique_image_uploader")
     threshold = st.slider("设置风险阈值(°)", 30, 90, 60)
     if uploaded_file and uploaded_file.type.startswith("image"):
         img = Image.open(uploaded_file)
@@ -666,19 +668,19 @@ if 'predictions' not in st.session_state:
     st.session_state.predictions = []
 st.subheader("角度参数")
 # Two-column layout for sliders
-col1, col2 = st.columns(2)
-
-with col1:
-    neck_flexion = st.slider("颈部前屈", 0, 60, 20)
-    neck_extension = st.slider("颈部后仰", 0, 60, 25)
-    shoulder_elevation = st.slider("肩部上举范围", 0, 180, 60)
-    shoulder_forward = st.slider("肩部前伸范围", 0, 180, 120)
-
-with col2:
-    elbow_flexion = st.slider("肘部屈伸", 0, 180, 120)
-    wrist_extension = st.slider("手腕背伸", 0, 60, 15)
-    wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 30, 10)
-    back_flexion = st.slider("背部屈曲范围", 0, 60, 20)
+with st.container(key="param_input_container"):
+    col1, col2 = st.columns(2)
+    with col1:
+        neck_flexion = st.slider("颈部前屈", 0, 60, 20, key="neck_flexion_slider")
+        neck_extension = st.slider("颈部后仰", 0, 60, 25, key="neck_extension_slider")
+        shoulder_elevation = st.slider("肩部上举范围", 0, 180, 60, key="shoulder_elevation_slider")
+        shoulder_forward = st.slider("肩部前伸范围", 0, 180, 120, key="shoulder_forward_slider")
+    
+    with col2:
+        elbow_flexion = st.slider("肘部屈伸", 0, 180, 120, key="elbow_flexion_slider")
+        wrist_extension = st.slider("手腕背伸", 0, 60, 15, key="wrist_extension_slider")
+        wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 30, 10, key="wrist_deviation_slider")
+        back_flexion = st.slider("背部屈曲范围", 0, 60, 20, key="back_flexion_slider")
 
 # Task parameters
 st.subheader("时间参数")
@@ -780,7 +782,7 @@ def calculate_score(answer):
     else:  # 总是
         return 4
 
-if st.button("评估"):
+if st.button("评估", key="unique_evaluate_button"):
     if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
         st.warning("请先选择所有问题的答案！")
     else:
@@ -819,7 +821,7 @@ if st.session_state.predictions:
     prediction_df = pd.concat(st.session_state.predictions, ignore_index=True)
     st.write(prediction_df)
     
-if st.button("开始 AI 分析"):
+if st.button("开始 AI 分析", key="unique_ai_analysis_button"):
     # 显示 AI 分析部分
     st.subheader("AI 分析")
     st.info("生成潜在人因危害分析及改善建议：")
@@ -898,7 +900,7 @@ def handle_chat_interaction():
     input_container = st.container()
     with input_container:
         if 'client' in st.session_state and st.session_state.client:
-            prompt = st.chat_input("请输入您的问题:", key="chat_input")
+            prompt = st.chat_input("请输入您的问题:", key="main_chat_input")
             
             if prompt:
                 # 添加用户消息
