@@ -633,6 +633,7 @@ if st.sidebar.checkbox("标准参考"):
     """, unsafe_allow_html=True)
 if st.sidebar.checkbox("角度测量"):    
     # Streamlit界面
+    st.title("关节角度测量")
     st.markdown("""
     **分析关节：​**
     - 颈部前屈
