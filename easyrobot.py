@@ -31,6 +31,7 @@ mp_hands = mp.solutions.hands
 pose = mp_pose.Pose(min_detection_confidence=0.8, min_tracking_confidence=0.8)
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
+
 def get_coord(landmark, model_type='pose', img_width=640, img_height=480):
     """统一三维坐标处理（手部z轴补零）"""
     if model_type == 'pose':
@@ -152,76 +153,76 @@ def process_image(image):
 
         # 基础关节点
         joints = {
-            '左侧': {
-                '肩膀': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
-                '肘部': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW),
-                '手腕': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
-                '臀部': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
-                '膝部': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
+            'left': {
+                'shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
+                'elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW),
+                'wrist': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
+                'hip': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
+                'knee': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
             },
-            '右侧': {
-                '肩膀': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
-                '肘部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
-                '手腕': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
-                '臀部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
-                '膝部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
+            'right': {
+                'shoulder': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
+                'elbow': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
+                'wrist': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
+                'hip': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
+                'knee': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
             },
-            '中间': {
-                '肩膀': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] +
-                          get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)[i]) / 2 for i in range(3)],
-                '臀部': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] +
+            'mid': {
+                'shoulder': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] +
+                              get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)[i]) / 2 for i in range(3)],
+                'hip': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] +
                          get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP)[i]) / 2 for i in range(3)],
-                '膝部': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] +
+                'knee': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] +
                           get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)[i]) / 2 for i in range(3)]
             },
-            '鼻子': get_pose_pt(mp_pose.PoseLandmark.NOSE)
+            'nose': get_pose_pt(mp_pose.PoseLandmark.NOSE)
         }
 
         # 合并手部数据
         if hands_result.multi_hand_landmarks:
             for hand in hands_result.multi_hand_landmarks:
-                side = '左侧' if hand.landmark[0].x < 0.5 else '右侧'
+                side = 'left' if hand.landmark[0].x < 0.5 else 'right'
                 joints[side].update({
-                    '手腕': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
-                    '食指关节': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
-                    '食指尖端': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
+                    'hand_wrist': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
+                    'index_mcp': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
+                    'index_tip': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
                 })
 
         # 计算指定关节角度
         try:
             # 颈部前屈
-            metrics['angles']['颈部前屈'] = calculate_neck_flexion(
-                joints['鼻子'], joints['中间']['肩膀'], joints['中间']['臀部'])
+            metrics['angles']['Neck Flexion'] = calculate_neck_flexion(
+                joints['nose'], joints['mid']['shoulder'], joints['mid']['hip'])
 
             # 肩部运动
-            for side in ['左侧', '右侧']:
+            for side in ['left', 'right']:
                 # 上举（冠状面）
-                metrics['angles'][f'{side} 肩部上举'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
+                metrics['angles'][f'{side.capitalize()} Shoulder Abduction'] = calculate_angle(
+                    joints[side]['hip'], joints[side]['shoulder'], joints[side]['elbow'], 'frontal')
                 # 前伸（矢状面）
-                metrics['angles'][f'{side} 肩部前伸'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
+                metrics['angles'][f'{side.capitalize()} Shoulder Flexion'] = calculate_angle(
+                    joints[side]['hip'], joints[side]['shoulder'], joints[side]['elbow'], 'sagittal')
 
             # 肘部屈伸
-            for side in ['左侧', '右侧']:
-                metrics['angles'][f'{side} 肘部屈伸'] = calculate_angle(
-                    joints[side]['肩膀'], joints[side]['肘部'], joints[side]['手腕'], 'sagittal')
+            for side in ['left', 'right']:
+                metrics['angles'][f'{side.capitalize()} Elbow Flex'] = calculate_angle(
+                    joints[side]['shoulder'], joints[side]['elbow'], joints[side]['wrist'], 'sagittal')
 
             # 手腕动作
-            for side in ['左侧', '右侧']:
-                if '手腕' in joints[side]:
+            for side in ['left', 'right']:
+                if 'hand_wrist' in joints[side]:
                     # 背伸
-                    metrics['angles'][f'{side} 手腕背伸'] = calculate_angle(
-                        joints[side]['肘部'], joints[side]['手腕'],
-                        joints[side]['食指尖端'], 'sagittal')
+                    metrics['angles'][f'{side.capitalize()} Wrist Extension'] = calculate_angle(
+                        joints[side]['elbow'], joints[side]['hand_wrist'],
+                        joints[side]['index_tip'], 'sagittal')
                     # 桡偏
-                    metrics['angles'][f'{side} 手腕桡偏'] = calculate_angle(
-                        joints[side]['食指关节'], joints[side]['手腕'],
-                        joints[side]['食指尖端'], 'frontal')
+                    metrics['angles'][f'{side.capitalize()} Wrist Deviation'] = calculate_angle(
+                        joints[side]['index_mcp'], joints[side]['hand_wrist'],
+                        joints[side]['index_tip'], 'frontal')
 
             # 背部屈曲
-            metrics['angles']['背部屈曲'] = calculate_trunk_flexion(
-                joints['中间']['肩膀'], joints['中间']['臀部'], joints['中间']['膝部'])
+            metrics['angles']['Trunk Flexion'] = calculate_trunk_flexion(
+                joints['mid']['shoulder'], joints['mid']['hip'], joints['mid']['knee'])
 
             # 可视化
             draw_landmarks(image, joints)
@@ -235,36 +236,36 @@ def draw_landmarks(image, joints):
     """可视化指定关节连线"""
     # 颜色配置
     colors = {
-        '颈部': (255, 200, 0),  # 金黄色
-        '肩膀': (0, 255, 0),  # 绿色
-        '肘部': (0, 255, 255),  # 青色
-        '手腕': (255, 0, 255)  # 品红色
+        'neck': (255, 200, 0),  # 金黄色
+        'shoulder': (0, 255, 0),  # 绿色
+        'elbow': (0, 255, 255),  # 青色
+        'wrist': (255, 0, 255)  # 品红色
     }
 
     # 绘制颈部前屈
-    nose = tuple(map(int, joints['鼻子'][:2]))
-    shoulder_mid = tuple(map(int, joints['中间']['肩膀'][:2]))
-    hip_mid = tuple(map(int, joints['中间']['臀部'][:2]))
-    cv2.line(image, nose, shoulder_mid, colors['颈部'], 2)
-    cv2.line(image, shoulder_mid, hip_mid, colors['颈部'], 2)
+    nose = tuple(map(int, joints['nose'][:2]))
+    shoulder_mid = tuple(map(int, joints['mid']['shoulder'][:2]))
+    hip_mid = tuple(map(int, joints['mid']['hip'][:2]))
+    cv2.line(image, nose, shoulder_mid, colors['neck'], 2)
+    cv2.line(image, shoulder_mid, hip_mid, colors['neck'], 2)
 
     # 绘制上肢
-    for side in ['左侧', '右侧']:
+    for side in ['left', 'right']:
         # 肩-肘
-        pt1 = tuple(map(int, joints[side]['肩膀'][:2]))
-        pt2 = tuple(map(int, joints[side]['肘部'][:2]))
-        cv2.line(image, pt1, pt2, colors['肩膀'], 2)
+        pt1 = tuple(map(int, joints[side]['shoulder'][:2]))
+        pt2 = tuple(map(int, joints[side]['elbow'][:2]))
+        cv2.line(image, pt1, pt2, colors['shoulder'], 2)
 
         # 肘-腕
-        pt3 = tuple(map(int, joints[side]['肘部'][:2]))
-        pt4 = tuple(map(int, joints[side]['手腕'][:2]))
-        cv2.line(image, pt3, pt4, colors['肘部'], 2)
+        pt3 = tuple(map(int, joints[side]['elbow'][:2]))
+        pt4 = tuple(map(int, joints[side]['wrist'][:2]))
+        cv2.line(image, pt3, pt4, colors['elbow'], 2)
 
         # 手部连线
-        if '手腕' in joints[side]:
-            pt5 = tuple(map(int, joints[side]['手腕'][:2]))
-            pt6 = tuple(map(int, joints[side]['食指尖端'][:2]))
-            cv2.line(image, pt5, pt6, colors['手腕'], 2)
+        if 'hand_wrist' in joints[side]:
+            pt5 = tuple(map(int, joints[side]['hand_wrist'][:2]))
+            pt6 = tuple(map(int, joints['side']['index_tip'][:2]))
+            cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
 
 # 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
