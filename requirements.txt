@@ -10,7 +10,6 @@ requests
 OpenAI
 mediapipe
 Image
-Python==3.9.18  # 必须指定兼容版本
 opencv-python-headless==4.5.5.64  # 使用 headless 版本
 mediapipe==0.8.11  # 兼容版本
 protobuf==3.20.3  # 避免 mediapipe 的版本冲突
