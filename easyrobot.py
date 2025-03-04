@@ -652,8 +652,8 @@ if st.sidebar.checkbox("数据测量"):
             for joint, angle in metrics['angles'].items():
                 status = "⚠️" if angle > threshold else "✅"
                 st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
-            else:
-                st.info("请上传JPG/PNG格式的图片")
+    else:
+        st.info("请上传JPG/PNG格式的图片")
 
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
