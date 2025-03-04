@@ -17,8 +17,3 @@ numpy
 pandas
 streamlit
 Pillow
-libgl1
-libglib2.0-0
-libsm6
-libxext6
-libxrender1
