@@ -11,6 +11,6 @@ openpyxl>=3.0.0
 pydantic
 requests
 OpenAI
-opencv-python
+opencv-python-headless
 mediapipe
 Image
