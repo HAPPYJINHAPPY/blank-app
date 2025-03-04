@@ -12,7 +12,7 @@ Image
 pandas
 streamlit
 Pillow
+mediapipe>=0.10.20
 opencv-python-headless==4.9.0.80
 numpy>=1.21.5
-mediapipe>=0.10.20
 protobuf>=4.25.3
