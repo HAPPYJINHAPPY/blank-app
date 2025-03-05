@@ -424,113 +424,106 @@ else:
     plt.rcParams['font.sans-serif'] = [font_name]
     plt.rcParams['axes.unicode_minus'] = False
 
-# 1. 读取数据
+Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
 data = pd.read_csv(file_path, encoding='gbk')
 
-# 2. 特征和标签
+1. Features and labels
 X = data.drop(columns=["疲劳等级"])
 y = data["疲劳等级"]
 
-# 3. 列名标准化（去掉空格）
+Normalize column names to avoid spaces
 X.columns = X.columns.str.replace(' ', '_')
 
-# 4. 数据拆分
+2. Data split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 5. 加载已训练的模型
-@st.cache_resource
-def load_model():
-    with open("fatigue_model.pkl", "rb") as f:
-        model = pickle.load(f)
-    return model
+3. Model training
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
 
-# 确保模型正确加载
-model = load_model()
-
-# 生成预测结果
+4. Predictions
 y_pred = model.predict(X_test)
 
-# 评估模型
+5. Evaluation
 accuracy = accuracy_score(y_test, y_pred)
 conf_matrix = confusion_matrix(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
-
-# 特征重要性
+#Feature importance
 feature_importances = model.feature_importances_
 importance_df = pd.DataFrame({
-    "Feature": X.columns,
-    "Importance": feature_importances
+"Feature": X.columns,
+"Importance": feature_importances
 }).sort_values(by="Importance", ascending=False)
 
-# 生成特征重要性图
+#Create feature importance plot
 fig, ax = plt.subplots(figsize=(10, 6))
 sns.barplot(x="Importance", y="Feature", hue="Feature", data=importance_df, palette="viridis", ax=ax, legend=False)
 ax.set_title("Feature Importance in Fatigue Classification")
 ax.set_xlabel("Importance Score")
 ax.set_ylabel("Features")
+set_font_properties(ax, font_prop)
 
-# 在 Streamlit 中展示
+#Save model
+with open("fatigue_model.pkl", "wb") as f:
+pickle.dump(model, f)
+
+#在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
-    st.subheader("📊 模型评估")
-    # 使用 st.columns 创建一列布局
-    col1 = st.columns(1)
-    # 在第一列中放置内容
-    with col1[0]:
-        st.markdown("""
-        <div style="
-            background-color: #F0F2F6;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-        ">
-            <div style="
-                font-size: 32px;
-                font-weight: bold;
-                color: #2E86C1;
-            ">
-                {:.2f}%
-            </div>
-            <div style="
-                font-size: 16px;
-                color: #666;
-            ">
-                准确性
-            </div>
-        </div>
-        """.format(accuracy * 100), unsafe_allow_html=True)
+st.subheader("📊 模型评估")
+# 使用 st.columns 创建一列布局
+col1 = st.columns(1)
+# 在第一列中放置内容
+with col1[0]:
+st.markdown("""
+<div style=" background-color: #F0F2F6; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; ">
+<div style=" font-size: 32px; font-weight: bold; color: #2E86C1; ">
+{:.2f}%
+</div>
+<div style=" font-size: 16px; color: #666; ">
+准确性
+</div>
+</div>
+""".format(accuracy * 100), unsafe_allow_html=True)
 
-    # 混淆矩阵
-    st.markdown("### 混淆矩阵")
-    fig_conf, ax_conf = plt.subplots()
-    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", ax=ax_conf)
-    ax_conf.set_xlabel("Predicted")
-    ax_conf.set_ylabel("Actual")
-    ax_conf.set_title("Confusion Matrix")
-    st.pyplot(fig_conf)
+# 混淆矩阵
+st.markdown("### 混淆矩阵")
+fig_conf, ax_conf = plt.subplots()
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", ax=ax_conf)
+ax_conf.set_xlabel("Predicted")
+ax_conf.set_ylabel("Actual")
+ax_conf.set_title("Confusion Matrix")
+st.pyplot(fig_conf)
 
-    # 特征重要性
-    st.markdown("### 特征重要性")
-    st.pyplot(fig)
+# 特征重要性
+st.markdown("### 特征重要性")
+st.pyplot(fig)
 
-    # 添加一些说明
-    st.markdown("""
-    <div style="
-        background-color: #E8F5E9;
-        padding: 15px;
-        border-radius: 10px;
-        color: #2E7D32;
-        margin-top: 20px;
-    ">
-        💡 提示：
-        <ul>
-            <li>混淆矩阵显示了模型的预测结果与实际标签的对比。对角线上的值表示正确预测的数量。</li>
-            <li>特征重要性图展示了每个特征对模型预测的贡献程度。</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+# 添加一些说明
+st.markdown("""
+<div style="
+    background-color: #E8F5E9;
+    padding: 15px;
+    border-radius: 10px;
+    color: #2E7D32;
+    margin-top: 20px;
+">
+    💡 提示：
+    <ul>
+        <li>混淆矩阵显示了模型的预测结果与实际标签的对比。对角线上的值表示正确预测的数量。</li>
+        <li>特征重要性图展示了每个特征对模型预测的贡献程度。</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
+展开
+@st.cache_resource
+def load_model():
+with open("fatigue_model.pkl", "rb") as f:
+model = pickle.load(f)
+return model
+
+model = load_model()
     
 # Streamlit sidebar
 if st.sidebar.checkbox("标准参考"):
