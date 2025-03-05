@@ -463,12 +463,14 @@ importance_df = pd.DataFrame({
 }).sort_values(by="Importance", ascending=False)
 
 # 生成特征重要性图
-fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(x="Importance", y="Feature", hue="Feature", data=importance_df, palette="viridis", ax=ax, legend=False)
-ax.set_title("Feature Importance in Fatigue Classification")
-ax.set_xlabel("Importance Score")
-ax.set_ylabel("Features")
-# set_font_properties(ax, font_prop) # 如果有字体设置，确保该方法有效
+if st.sidebar.checkbox("显示特征重要性图"):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x="Importance", y="Feature", data=importance_df, palette="viridis", ax=ax)
+    st.pyplot(fig)
+    ax.set_title("Feature Importance in Fatigue Classification")
+    ax.set_xlabel("Importance Score")
+    ax.set_ylabel("Features")
+
 
 # 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
