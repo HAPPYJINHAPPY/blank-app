@@ -424,50 +424,51 @@ else:
     plt.rcParams['font.sans-serif'] = [font_name]
     plt.rcParams['axes.unicode_minus'] = False
 
-# Load the uploaded file
+# 1. 读取数据
 file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
 data = pd.read_csv(file_path, encoding='gbk')
 
-# 1. Features and labels
+# 2. 特征和标签
 X = data.drop(columns=["疲劳等级"])
 y = data["疲劳等级"]
 
-# Normalize column names to avoid spaces
+# 3. 列名标准化（去掉空格）
 X.columns = X.columns.str.replace(' ', '_')
 
-# 2. Data split
+# 4. 数据拆分
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 3. Model training
-model = RandomForestClassifier(random_state=42)
-model.fit(X_train, y_train)
+# 5. 加载已训练的模型
+@st.cache_resource
+def load_model():
+    with open("fatigue_model.pkl", "rb") as f:
+        model = pickle.load(f)
+    return model
 
-# 4. Predictions
+model = load_model()
+
+# 6. 进行预测
 y_pred = model.predict(X_test)
 
-# 5. Evaluation
+# 7. 评估模型
 accuracy = accuracy_score(y_test, y_pred)
 conf_matrix = confusion_matrix(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
-# Feature importance
+# 特征重要性
 feature_importances = model.feature_importances_
 importance_df = pd.DataFrame({
     "Feature": X.columns,
     "Importance": feature_importances
 }).sort_values(by="Importance", ascending=False)
 
-# Create feature importance plot
+# 生成特征重要性图
 fig, ax = plt.subplots(figsize=(10, 6))
 sns.barplot(x="Importance", y="Feature", hue="Feature", data=importance_df, palette="viridis", ax=ax, legend=False)
 ax.set_title("Feature Importance in Fatigue Classification")
 ax.set_xlabel("Importance Score")
 ax.set_ylabel("Features")
-set_font_properties(ax, font_prop)
-
-# Save model
-with open("fatigue_model.pkl", "wb") as f:
-    pickle.dump(model, f)
+# set_font_properties(ax, font_prop) # 如果有字体设置，确保该方法有效
 
 # 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
@@ -529,16 +530,7 @@ if st.sidebar.checkbox("模型性能"):
         </ul>
     </div>
     """, unsafe_allow_html=True)
-
-
-@st.cache_resource
-def load_model():
-    with open("fatigue_model.pkl", "rb") as f:
-        model = pickle.load(f)
-    return model
-
-
-model = load_model()
+    
 # Streamlit sidebar
 if st.sidebar.checkbox("标准参考"):
     st.markdown("""
