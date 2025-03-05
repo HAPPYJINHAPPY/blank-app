@@ -459,7 +459,7 @@ importance_df = pd.DataFrame({
 
 # Create feature importance plot
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(x="Importance", y="Feature", data=importance_df, palette="viridis", ax=ax)
+sns.barplot(x="Importance", y="Feature", hue="Feature", data=importance_df, palette="viridis", ax=ax, legend=False)
 ax.set_title("Feature Importance in Fatigue Classification")
 ax.set_xlabel("Importance Score")
 ax.set_ylabel("Features")
