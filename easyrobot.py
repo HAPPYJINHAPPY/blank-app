@@ -31,12 +31,14 @@ mp_hands = mp.solutions.hands
 pose = mp_pose.Pose(min_detection_confidence=0.8, min_tracking_confidence=0.8)
 hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
 
+
 def get_coord(landmark, model_type='pose', img_width=640, img_height=480):
     """统一三维坐标处理（手部z轴补零）"""
     if model_type == 'pose':
         return [landmark.x * img_width, landmark.y * img_height, landmark.z * img_width]
     elif model_type == 'hands':
         return [landmark.x * img_width, landmark.y * img_height, 0]  # 手部深度补零
+
 
 def calculate_angle(a, b, c, plane='sagittal'):
     """安全的三维角度计算"""
@@ -74,6 +76,7 @@ def calculate_angle(a, b, c, plane='sagittal'):
         print(f"角度计算错误: {str(e)}")
         return 0.0
 
+
 def calculate_neck_flexion(nose, shoulder_mid, hip_mid):
     """计算颈部前屈角度（偏离中心位的角度）"""
     try:
@@ -107,6 +110,7 @@ def calculate_neck_flexion(nose, shoulder_mid, hip_mid):
         print(f"颈部前屈计算错误: {str(e)}")
         return 0.0
 
+
 def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
     """计算背部屈曲角度（偏离中心位的角度）"""
     try:
@@ -134,6 +138,7 @@ def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
     except Exception as e:
         print(f"背部屈曲计算错误: {str(e)}")
         return 0.0
+
 
 def process_image(image):
     H, W, _ = image.shape
@@ -231,6 +236,7 @@ def process_image(image):
 
     return image, metrics
 
+
 def draw_landmarks(image, joints):
     """可视化指定关节连线"""
     # 颜色配置
@@ -265,6 +271,8 @@ def draw_landmarks(image, joints):
             pt5 = tuple(map(int, joints[side]['hand_wrist'][:2]))
             pt6 = tuple(map(int, joints['side']['index_tip'][:2]))
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
+
+
 # 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
 def get_file_content(file_path):
     try:
@@ -424,107 +432,121 @@ else:
     plt.rcParams['font.sans-serif'] = [font_name]
     plt.rcParams['axes.unicode_minus'] = False
 
-Load the uploaded file
+# Load the uploaded file
 file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
 data = pd.read_csv(file_path, encoding='gbk')
 
-1. Features and labels
+# 1. Features and labels
 X = data.drop(columns=["疲劳等级"])
 y = data["疲劳等级"]
 
-Normalize column names to avoid spaces
+# Normalize column names to avoid spaces
 X.columns = X.columns.str.replace(' ', '_')
 
-2. Data split
+# 2. Data split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-3. Model training
+# 3. Model training
 model = RandomForestClassifier(random_state=42)
 model.fit(X_train, y_train)
 
-4. Predictions
+# 4. Predictions
 y_pred = model.predict(X_test)
 
-5. Evaluation
+# 5. Evaluation
 accuracy = accuracy_score(y_test, y_pred)
 conf_matrix = confusion_matrix(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
-#Feature importance
+# Feature importance
 feature_importances = model.feature_importances_
 importance_df = pd.DataFrame({
-"Feature": X.columns,
-"Importance": feature_importances
+    "Feature": X.columns,
+    "Importance": feature_importances
 }).sort_values(by="Importance", ascending=False)
 
-#Create feature importance plot
+# Create feature importance plot
 fig, ax = plt.subplots(figsize=(10, 6))
-sns.barplot(x="Importance", y="Feature", hue="Feature", data=importance_df, palette="viridis", ax=ax, legend=False)
+sns.barplot(x="Importance", y="Feature", data=importance_df, palette="viridis", ax=ax)
 ax.set_title("Feature Importance in Fatigue Classification")
 ax.set_xlabel("Importance Score")
 ax.set_ylabel("Features")
 set_font_properties(ax, font_prop)
 
-#Save model
+# Save model
 with open("fatigue_model.pkl", "wb") as f:
-pickle.dump(model, f)
+    pickle.dump(model, f)
 
-#在 Streamlit 中展示
+# 在 Streamlit 中展示
 if st.sidebar.checkbox("模型性能"):
-st.subheader("📊 模型评估")
-# 使用 st.columns 创建一列布局
-col1 = st.columns(1)
-# 在第一列中放置内容
-with col1[0]:
-st.markdown("""
-<div style=" background-color: #F0F2F6; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; ">
-<div style=" font-size: 32px; font-weight: bold; color: #2E86C1; ">
-{:.2f}%
-</div>
-<div style=" font-size: 16px; color: #666; ">
-准确性
-</div>
-</div>
-""".format(accuracy * 100), unsafe_allow_html=True)
+    st.subheader("📊 模型评估")
+    # 使用 st.columns 创建一列布局
+    col1 = st.columns(1)
+    # 在第一列中放置内容
+    with col1[0]:
+        st.markdown("""
+        <div style="
+            background-color: #F0F2F6;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        ">
+            <div style="
+                font-size: 32px;
+                font-weight: bold;
+                color: #2E86C1;
+            ">
+                {:.2f}%
+            </div>
+            <div style="
+                font-size: 16px;
+                color: #666;
+            ">
+                准确性
+            </div>
+        </div>
+        """.format(accuracy * 100), unsafe_allow_html=True)
 
-# 混淆矩阵
-st.markdown("### 混淆矩阵")
-fig_conf, ax_conf = plt.subplots()
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", ax=ax_conf)
-ax_conf.set_xlabel("Predicted")
-ax_conf.set_ylabel("Actual")
-ax_conf.set_title("Confusion Matrix")
-st.pyplot(fig_conf)
+    # 混淆矩阵
+    st.markdown("### 混淆矩阵")
+    fig_conf, ax_conf = plt.subplots()
+    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", ax=ax_conf)
+    ax_conf.set_xlabel("Predicted")
+    ax_conf.set_ylabel("Actual")
+    ax_conf.set_title("Confusion Matrix")
+    st.pyplot(fig_conf)
 
-# 特征重要性
-st.markdown("### 特征重要性")
-st.pyplot(fig)
+    # 特征重要性
+    st.markdown("### 特征重要性")
+    st.pyplot(fig)
 
-# 添加一些说明
-st.markdown("""
-<div style="
-    background-color: #E8F5E9;
-    padding: 15px;
-    border-radius: 10px;
-    color: #2E7D32;
-    margin-top: 20px;
-">
-    💡 提示：
-    <ul>
-        <li>混淆矩阵显示了模型的预测结果与实际标签的对比。对角线上的值表示正确预测的数量。</li>
-        <li>特征重要性图展示了每个特征对模型预测的贡献程度。</li>
-    </ul>
-</div>
-""", unsafe_allow_html=True)
-展开
+    # 添加一些说明
+    st.markdown("""
+    <div style="
+        background-color: #E8F5E9;
+        padding: 15px;
+        border-radius: 10px;
+        color: #2E7D32;
+        margin-top: 20px;
+    ">
+        💡 提示：
+        <ul>
+            <li>混淆矩阵显示了模型的预测结果与实际标签的对比。对角线上的值表示正确预测的数量。</li>
+            <li>特征重要性图展示了每个特征对模型预测的贡献程度。</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 @st.cache_resource
 def load_model():
-with open("fatigue_model.pkl", "rb") as f:
-model = pickle.load(f)
-return model
+    with open("fatigue_model.pkl", "rb") as f:
+        model = pickle.load(f)
+    return model
+
 
 model = load_model()
-    
 # Streamlit sidebar
 if st.sidebar.checkbox("标准参考"):
     st.markdown("""
@@ -617,7 +639,7 @@ if st.sidebar.checkbox("标准参考"):
 
     <div class="footer">通过遵循以上建议，您可以有效减少肌肉骨骼疾病的风险，提升工作效率和舒适度。</div>
     """, unsafe_allow_html=True)
-if st.sidebar.checkbox("角度测量"):    
+if st.sidebar.checkbox("角度测量"):
     # Streamlit界面
     st.markdown("""
     **分析关节：​**
@@ -627,34 +649,34 @@ if st.sidebar.checkbox("角度测量"):
     - 手腕背伸/桡偏
     - 背部屈曲
     """)
-    
+
     uploaded_file = st.file_uploader("上传工作场景图", type=["jpg", "png"])
     threshold = st.slider("设置风险阈值(°)", 30, 90, 60)
     if uploaded_file and uploaded_file.type.startswith("image"):
         img = Image.open(uploaded_file)
         img_np = np.array(img)
-    
+
         # 处理RGBA图像
         if img_np.shape[-1] == 4:
             img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
         else:
             img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-    
+
         processed_img, metrics = process_image(img_np)
-    
+
         # 双栏布局
         col1, col2 = st.columns(2)
         with col1:
             st.image(processed_img, channels="BGR", use_container_width=True)
-    
+
         with col2:
-            st.subheader("关节角度分析")
+            st.subheader("关节负荷分析")
             for joint, angle in metrics['angles'].items():
                 status = "⚠️" if angle > threshold else "✅"
                 st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
     else:
         st.info("请上传JPG/PNG格式的图片")
-        
+
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
 st.markdown(
