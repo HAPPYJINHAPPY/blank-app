@@ -662,7 +662,7 @@ if st.sidebar.checkbox("角度测量"):
             st.image(processed_img, channels="BGR", use_container_width=True)
     
         with col2:
-            st.subheader("关节负荷分析")
+            st.subheader("关节角度分析")
             for joint, angle in metrics['angles'].items():
                 status = "⚠️" if angle > threshold else "✅"
                 st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
