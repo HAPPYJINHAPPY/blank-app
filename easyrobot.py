@@ -18,41 +18,58 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from PIL import Image
+# ⭐️ 1. 缓存媒体管道模型初始化
+@st.cache_resource
+def load_mediapipe_models():
+    mp_pose = mp.solutions.pose
+    mp_hands = mp.solutions.hands
+    pose = mp_pose.Pose(min_detection_confidence=0.8, min_tracking_confidence=0.8)
+    hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+    return pose, hands
 
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # 从 Streamlit secrets 中获取 GitHub 令牌
-GITHUB_USERNAME = 'HAPPYJINHAPPY'  # 替换为你的 GitHub 用户名
-GITHUB_REPO = 'blank-app'  # 替换为你的 GitHub 仓库名
-GITHUB_BRANCH = 'main'  # 要上传的分支
-FILE_PATH = 'fatigue_data.csv'  # 文件路径
+pose, hands = load_mediapipe_models()
 
-# 初始化模型
-mp_pose = mp.solutions.pose
-mp_hands = mp.solutions.hands
-pose = mp_pose.Pose(min_detection_confidence=0.8, min_tracking_confidence=0.8)
-hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+# GitHub配置
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+GITHUB_USERNAME = 'HAPPYJINHAPPY'
+GITHUB_REPO = 'blank-app'
+GITHUB_BRANCH = 'main' 
+FILE_PATH = 'fatigue_data.csv'
 
+# ⭐️ 2. 缓存数据加载和模型训练
+@st.cache_data
+def load_and_train():
+    file_path = 'corrected_fatigue_simulation_data_Chinese.csv'
+    data = pd.read_csv(file_path, encoding='gbk')
+    X = data.drop(columns=["疲劳等级"])
+    y = data["疲劳等级"]
+    X.columns = X.columns.str.replace(' ', '_')
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X_train, y_train)
+    return model, X_test, y_test
 
+model, X_test, y_test = load_and_train()
+
+# 通用函数
 def get_coord(landmark, model_type='pose', img_width=640, img_height=480):
-    """统一三维坐标处理（手部z轴补零）"""
     if model_type == 'pose':
         return [landmark.x * img_width, landmark.y * img_height, landmark.z * img_width]
     elif model_type == 'hands':
-        return [landmark.x * img_width, landmark.y * img_height, 0]  # 手部深度补零
-
+        return [landmark.x * img_width, landmark.y * img_height, 0]
 
 def calculate_angle(a, b, c, plane='sagittal'):
-    """安全的三维角度计算"""
     try:
-        # 强制三维化
         a = np.array(a)[:3].astype('float64')
         b = np.array(b)[:3].astype('float64')
         c = np.array(c)[:3].astype('float64')
-
-        # 向量计算
+        
+        if max(np.concatenate([a, b, c])) < 0.01:  # ⭐️ 提前返回无效数据
+            return 0.0
+            
         ba = a - b
         bc = c - b
-
-        # 平面投影
+        
         if plane == 'sagittal':
             ba = np.array([0, ba[1], ba[2]])
             bc = np.array([0, bc[1], bc[2]])
@@ -63,99 +80,69 @@ def calculate_angle(a, b, c, plane='sagittal'):
             ba = ba[:2]
             bc = bc[:2]
 
-        # 零向量处理
         ba_norm = np.linalg.norm(ba)
         bc_norm = np.linalg.norm(bc)
         if ba_norm < 1e-6 or bc_norm < 1e-6:
             return 0.0
 
-        # 角度计算
         cosine = np.dot(ba, bc) / (ba_norm * bc_norm)
         return np.degrees(np.arccos(np.clip(cosine, -1.0, 1.0)))
     except Exception as e:
-        print(f"角度计算错误: {str(e)}")
         return 0.0
-
 
 def calculate_neck_flexion(nose, shoulder_mid, hip_mid):
-    """计算颈部前屈角度（偏离中心位的角度）"""
     try:
-        # 将坐标转换为 numpy 数组
-        nose = np.array(nose)[:2]  # 只取 x 和 y 坐标
+        nose = np.array(nose)[:2]
         shoulder_mid = np.array(shoulder_mid)[:2]
         hip_mid = np.array(hip_mid)[:2]
-
-        # 计算躯干轴线（肩膀中点到髋部中点）
+        
         torso_vector = hip_mid - shoulder_mid
         torso_angle = np.degrees(np.arctan2(torso_vector[1], torso_vector[0]))
-
-        # 计算头部向量（鼻子到肩膀中点）
         head_vector = nose - shoulder_mid
         head_angle = np.degrees(np.arctan2(head_vector[1], head_vector[0]))
-
-        # 计算偏离中心位的角度
         flexion_angle = head_angle - torso_angle
-
-        # 规范化角度到 0-180 度范围
+        
         if flexion_angle < 0:
             flexion_angle += 360
         if flexion_angle > 180:
             flexion_angle = 360 - flexion_angle
-
-        # 转换为偏离中心位的角度
-        flexion_angle = 180 - flexion_angle
-
-        return flexion_angle
-    except Exception as e:
-        print(f"颈部前屈计算错误: {str(e)}")
+            
+        return 180 - flexion_angle
+    except:
         return 0.0
-
 
 def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
-    """计算背部屈曲角度（偏离中心位的角度）"""
     try:
-        # 计算躯干轴线（肩膀中点到髋部中点）
         torso_vector = hip_mid - shoulder_mid
         torso_angle = np.degrees(np.arctan2(torso_vector[1], torso_vector[0]))
-
-        # 计算腿部轴线（髋部中点到膝部中点）
         leg_vector = knee_mid - hip_mid
         leg_angle = np.degrees(np.arctan2(leg_vector[1], leg_vector[0]))
-
-        # 计算偏离中心位的角度
         flexion_angle = leg_angle - torso_angle
-
-        # 规范化角度到 0-180 度范围
+        
         if flexion_angle < 0:
             flexion_angle += 360
         if flexion_angle > 180:
             flexion_angle = 360 - flexion_angle
-
-        # 转换为偏离中心位的角度
-        flexion_angle = 180 - flexion_angle
-
-        return flexion_angle
-    except Exception as e:
-        print(f"背部屈曲计算错误: {str(e)}")
+            
+        return 180 - flexion_angle
+    except:
         return 0.0
 
-
+# ⭐️ 3. 优化图像处理流程
 def process_image(image):
-    H, W, _ = image.shape
-    img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # 并行处理模型
+    H, W = 480, 640  # 固定处理尺寸
+    img = cv2.resize(image, (W, H))
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
     pose_result = pose.process(img_rgb)
     hands_result = hands.process(img_rgb)
-
+    
     metrics = {'angles': {}}
-
+    
     if pose_result.pose_landmarks:
-        # 关键点获取
         def get_pose_pt(landmark):
             return get_coord(pose_result.pose_landmarks.landmark[landmark], 'pose', W, H)
-
-        # 基础关节点
+            
         joints = {
             'left': {
                 'shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
@@ -181,8 +168,7 @@ def process_image(image):
             },
             'nose': get_pose_pt(mp_pose.PoseLandmark.NOSE)
         }
-
-        # 合并手部数据
+        
         if hands_result.multi_hand_landmarks:
             for hand in hands_result.multi_hand_landmarks:
                 side = 'left' if hand.landmark[0].x < 0.5 else 'right'
@@ -191,232 +177,105 @@ def process_image(image):
                     'index_mcp': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
                     'index_tip': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
                 })
-
-        # 计算指定关节角度
+                
         try:
-            # 颈部前屈
-            metrics['angles']['Neck Flexion'] = calculate_neck_flexion(
-                joints['nose'], joints['mid']['shoulder'], joints['mid']['hip'])
-
-            # 肩部运动
+            metrics['angles']['Neck Flexion'] = calculate_neck_flexion(joints['nose'], joints['mid']['shoulder'], joints['mid']['hip'])
+            
             for side in ['left', 'right']:
-                # 上举（冠状面）
                 metrics['angles'][f'{side.capitalize()} Shoulder Abduction'] = calculate_angle(
                     joints[side]['hip'], joints[side]['shoulder'], joints[side]['elbow'], 'frontal')
-                # 前伸（矢状面）
                 metrics['angles'][f'{side.capitalize()} Shoulder Flexion'] = calculate_angle(
                     joints[side]['hip'], joints[side]['shoulder'], joints[side]['elbow'], 'sagittal')
-
-            # 肘部屈伸
+                    
             for side in ['left', 'right']:
                 metrics['angles'][f'{side.capitalize()} Elbow Flex'] = calculate_angle(
                     joints[side]['shoulder'], joints[side]['elbow'], joints[side]['wrist'], 'sagittal')
-
-            # 手腕动作
+                    
             for side in ['left', 'right']:
                 if 'hand_wrist' in joints[side]:
-                    # 背伸
                     metrics['angles'][f'{side.capitalize()} Wrist Extension'] = calculate_angle(
-                        joints[side]['elbow'], joints[side]['hand_wrist'],
-                        joints[side]['index_tip'], 'sagittal')
-                    # 桡偏
+                        joints[side]['elbow'], joints[side]['hand_wrist'], joints[side]['index_tip'], 'sagittal')
                     metrics['angles'][f'{side.capitalize()} Wrist Deviation'] = calculate_angle(
-                        joints[side]['index_mcp'], joints[side]['hand_wrist'],
-                        joints[side]['index_tip'], 'frontal')
-
-            # 背部屈曲
+                        joints[side]['index_mcp'], joints[side]['hand_wrist'], joints[side]['index_tip'], 'frontal')
+                        
             metrics['angles']['Trunk Flexion'] = calculate_trunk_flexion(
                 joints['mid']['shoulder'], joints['mid']['hip'], joints['mid']['knee'])
-
-            # 可视化
-            draw_landmarks(image, joints)
-
+                
         except KeyError as e:
-            print(f"关键点缺失: {str(e)}")
-
+            pass
+            
+    # 显式释放资源
+    cv2.dnn.blobFromImage(img, swapRB=True)
+    gc.collect()
+    
     return image, metrics
 
-
-def draw_landmarks(image, joints):
-    """可视化指定关节连线"""
-    # 颜色配置
-    colors = {
-        'neck': (255, 200, 0),  # 金黄色
-        'shoulder': (0, 255, 0),  # 绿色
-        'elbow': (0, 255, 255),  # 青色
-        'wrist': (255, 0, 255)  # 品红色
-    }
-
-    # 绘制颈部前屈
-    nose = tuple(map(int, joints['nose'][:2]))
-    shoulder_mid = tuple(map(int, joints['mid']['shoulder'][:2]))
-    hip_mid = tuple(map(int, joints['mid']['hip'][:2]))
-    cv2.line(image, nose, shoulder_mid, colors['neck'], 2)
-    cv2.line(image, shoulder_mid, hip_mid, colors['neck'], 2)
-
-    # 绘制上肢
-    for side in ['left', 'right']:
-        # 肩-肘
-        pt1 = tuple(map(int, joints[side]['shoulder'][:2]))
-        pt2 = tuple(map(int, joints[side]['elbow'][:2]))
-        cv2.line(image, pt1, pt2, colors['shoulder'], 2)
-
-        # 肘-腕
-        pt3 = tuple(map(int, joints[side]['elbow'][:2]))
-        pt4 = tuple(map(int, joints[side]['wrist'][:2]))
-        cv2.line(image, pt3, pt4, colors['elbow'], 2)
-
-        # 手部连线
-        if 'hand_wrist' in joints[side]:
-            pt5 = tuple(map(int, joints[side]['hand_wrist'][:2]))
-            pt6 = tuple(map(int, joints['side']['index_tip'][:2]))
-            cv2.line(image, pt5, pt6, colors['wrist'], 2)
-
-
-# 获取文件内容，指定编码为utf-8，避免UnicodeDecodeError
-def get_file_content(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            return file.read()
-    except FileNotFoundError:
-        return ""  # 如果文件不存在，返回空字符串
-    except UnicodeDecodeError:
-        st.error("文件编码错误，无法解码文件。")
-        return None
-
-
-# 获取文件的 SHA 值
+# GitHub相关函数
 def get_file_sha(file_path):
     url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{file_path}'
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
     response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        file_info = response.json()
-        return file_info['sha']  # 返回SHA值
-    else:
-        st.warning(f"无法从 GitHub 获取文件: {response.json()}")
-        return None
-
+    return response.json()['sha'] if response.status_code == 200 else None
 
 def save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue):
-    # 计算各问题的得分
-    body_fatigue_score = calculate_score(body_fatigue)
-    cognitive_fatigue_score = calculate_score(cognitive_fatigue)
-    emotional_fatigue_score = calculate_score(emotional_fatigue)
-
-    # 获取当前时间戳
+    body_score = calculate_score(body_fatigue)
+    cognitive_score = calculate_score(cognitive_fatigue)
+    emotional_score = calculate_score(emotional_fatigue)
+    
     tz = pytz.timezone('Asia/Shanghai')
     timestamp = datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
-
-    # 数据字典，包括评分和其他输入
+    
     data = {
-        "颈部前屈": int(input_data["颈部前屈"].values[0]),
-        "颈部后仰": int(input_data["颈部后仰"].values[0]),
-        "肩部上举范围": int(input_data["肩部上举范围"].values[0]),
-        "肩部前伸范围": int(input_data["肩部前伸范围"].values[0]),
-        "肘部屈伸": int(input_data["肘部屈伸"].values[0]),
-        "手腕背伸": int(input_data["手腕背伸"].values[0]),
-        "手腕桡偏/尺偏": int(input_data["手腕桡偏/尺偏"].values[0]),
-        "背部屈曲范围": int(input_data["背部屈曲范围"].values[0]),
-        "持续时间": int(input_data["持续时间"].values[0]),
-        "重复频率": int(input_data["重复频率"].values[0]),
+        "颈部前屈": input_data["颈部前屈"].values[0],
+        "颈部后仰": input_data["颈部后仰"].values[0],
+        "肩部上举范围": input_data["肩部上举范围"].values[0],
+        "肩部前伸范围": input_data["肩部前伸范围"].values[0],
+        "肘部屈伸": input_data["肘部屈伸"].values[0],
+        "手腕背伸": input_data["手腕背伸"].values[0],
+        "手腕桡偏/尺偏": input_data["手腕桡偏/尺偏"].values[0],
+        "背部屈曲范围": input_data["背部屈曲范围"].values[0],
+        "持续时间": input_data["持续时间"].values[0],
+        "重复频率": input_data["重复频率"].values[0],
         "fatigue_result": result,
-        "body_fatigue_score": body_fatigue_score,  # 添加评分
-        "cognitive_fatigue_score": cognitive_fatigue_score,  # 添加评分
-        "emotional_fatigue_score": emotional_fatigue_score,  # 添加评分
-        "timestamp": timestamp  # 增加时间戳
+        "body_fatigue_score": body_score,
+        "cognitive_fatigue_score": cognitive_score,
+        "emotional_fatigue_score": emotional_score,
+        "timestamp": timestamp
     }
+    
     df = pd.DataFrame([data])
+    df.to_csv(FILE_PATH, mode='a', header=not os.path.exists(FILE_PATH), index=False)
 
-    # 检查文件是否存在
+# ⭐️ 4. 批量提交功能
+def upload_to_github():
     if os.path.exists(FILE_PATH):
-        existing_content = get_file_content(FILE_PATH)
-
-        # 如果文件内容非空，读取数据
-        if existing_content and existing_content.strip():
-            existing_df = pd.read_csv(io.StringIO(existing_content))
-        else:
-            # 如果文件为空，初始化空的 DataFrame
-            existing_df = pd.DataFrame(
-                columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸',
-                         '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result',
-                         'body_fatigue_score', 'cognitive_fatigue_score', 'emotional_fatigue_score'])
-    else:
-        # 文件不存在，初始化空的 DataFrame
-        existing_df = pd.DataFrame(
-            columns=['timestamp', '颈部前屈', '颈部后仰', '肩部上举范围', '肩部前伸范围', '肘部屈伸', '手腕背伸',
-                     '手腕桡偏/尺偏', '背部屈曲范围', '持续时间', '重复频率', 'fatigue_result', 'body_fatigue_score',
-                     'cognitive_fatigue_score', 'emotional_fatigue_score'])
-
-    # 合并现有的 DataFrame 和新数据
-    updated_df = pd.concat([existing_df, df], ignore_index=True)
-
-    # 保存更新后的 DataFrame 到 CSV 文件
-    updated_df.to_csv(FILE_PATH, index=False)
+        with open(FILE_PATH, 'rb') as f:
+            content = base64.b64encode(f.read()).decode()
+            
+        url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{FILE_PATH}'
+        data = {
+            "message": "Batch update fatigue data",
+            "branch": GITHUB_BRANCH,
+            "content": content,
+            "sha": get_file_sha(FILE_PATH)
+        }
+        
+        headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+        response = requests.put(url, json=data, headers=headers)
+        return response.status_code == 200
+    return False
 
 
-# 上传到 GitHub
-def upload_to_github(file_path):
-    # 获取文件的 SHA 值
-    sha_value = get_file_sha(file_path)
-
-    # 读取 CSV 文件内容并进行 base64 编码
-    with open(file_path, 'rb') as file:
-        content = base64.b64encode(file.read()).decode()
-
-    # GitHub API 请求 URL
-    url = f'https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{file_path}'
-
-    # 提交的信息
-    commit_message = "Add new fatigue data with timestamp"
-
-    data = {
-        "message": commit_message,
-        "branch": GITHUB_BRANCH,
-        "content": content,
-    }
-
-    # 如果文件已经存在，提供 sha 值
-    if sha_value:
-        data["sha"] = sha_value
-
-    headers = {
-        'Authorization': f'token {GITHUB_TOKEN}',
-        'Accept': 'application/vnd.github.v3+json',
-    }
-
-    response = requests.put(url, json=data, headers=headers)
-
-    # 输出详细错误信息
-    if response.status_code != 200 and response.status_code != 201:
-        st.error(f"Failed to upload CSV file to GitHub: {response.json()}")
-        print(f"GitHub API Response: {response.json()}")
-
-
+# 辅助函数
 def calculate_score(answer):
-    if answer == '请选择':
-        return 0  # 未选择时，得分为 0
-    elif answer == '完全没有':
-        return 1
-    elif answer == '偶尔':
-        return 2
-    elif answer == '经常':
-        return 3
-    else:  # 总是
-        return 4
+    return {'请选择':0, '完全没有':1, '偶尔':2, '经常':3, '总是':4}.get(answer, 0)
 
-
-font_path = "SourceHanSansCN-Normal.otf"  # 替换为你的上传字体文件名
-
-# 检查字体文件是否存在
-if not os.path.exists(font_path):
-    st.error(f"Font file not found: {font_path}")
-else:
-    # 设置字体属性
+# 界面配置
+font_path = "SourceHanSansCN-Normal.otf"
+if os.path.exists(font_path):
     font_prop = font_manager.FontProperties(fname=font_path)
-    font_name = font_prop.get_name()
-
+    plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
+    plt.rcParams['axes.unicode_minus'] = False
 
     # 创建自定义函数来统一设置字体
     def set_font_properties(ax, font_prop):
@@ -426,7 +285,6 @@ else:
         ax.title.set_fontproperties(font_prop)
         ax.xaxis.label.set_fontproperties(font_prop)
         ax.yaxis.label.set_fontproperties(font_prop)
-
 
     # 全局设置字体
     plt.rcParams['font.sans-serif'] = [font_name]
@@ -788,21 +646,6 @@ with col3:
         ['请选择', '完全没有', '偶尔', '经常', '总是'],
         index=0  # 初始状态为未选择（'请选择'）
     )
-
-
-# 根据选项得分
-def calculate_score(answer):
-    if answer == '请选择':
-        return 0  # 未选择时，得分为 0
-    elif answer == '完全没有':
-        return 1
-    elif answer == '偶尔':
-        return 2
-    elif answer == '经常':
-        return 3
-    else:  # 总是
-        return 4
-
 
 if st.button("评估"):
     # 如果用户未选择所有问题，则提示
