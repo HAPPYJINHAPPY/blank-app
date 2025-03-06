@@ -18,6 +18,8 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from PIL import Image
+import gc
+
 # ⭐️ 1. 缓存媒体管道模型初始化
 @st.cache_resource
 def load_mediapipe_models():
