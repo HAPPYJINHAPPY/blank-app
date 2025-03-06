@@ -540,6 +540,11 @@ if st.sidebar.checkbox("角度测量"):
     else:
         st.info("请上传JPG/PNG格式的图片")
 
+
+def fatigue_prediction(input_data):
+    prediction = model.predict(input_data)
+    return ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
+
 # 使用 Markdown 居中标题
 st.markdown("<h1 style='text-align: center;'>疲劳评估测试系统</h1>", unsafe_allow_html=True)
 st.markdown(
@@ -590,12 +595,9 @@ with st.form("main_form"):
             index=0
         )
 
-        # 并排显示两个按钮
-    col_submit1, col_submit2 = st.columns(2)
-    with col_submit1:
-        submitted_eval = st.form_submit_button("开始评估")
-    with col_submit2:
-        submitted_ai = st.form_submit_button("开始AI分析")
+    # 垂直排列按钮
+    submitted_eval = st.form_submit_button("🚀 开始评估", use_container_width=True)
+    submitted_ai = st.form_submit_button("🤖 AI分析", use_container_width=True)
 
 # 将评估逻辑移出表单，仅在点击时执行
 if submitted_eval:
@@ -644,13 +646,6 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if 'client' not in st.session_state:
     st.session_state.client = None
-
-    # 定义疲劳评估函数
-
-
-def fatigue_prediction(input_data):
-    prediction = model.predict(input_data)
-    return ["低疲劳状态", "中疲劳状态", "高疲劳状态"][prediction[0]]
 
 
 def call_ark_api(client, messages):
