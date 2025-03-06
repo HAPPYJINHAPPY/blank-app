@@ -680,8 +680,6 @@ if st.session_state.predictions:
     st.write(prediction_df)
 
 if submitted_ai:
-    st.subheader("AI 分析")
-    st.info("生成潜在人因危害分析及改善建议：")
     API_KEY = "sk-zyiqsryunuwkjonzywoqfwzksxmxngwgdqaagdscgzepnlal"  # 直接设置 API_KEY
     client = OpenAI(api_key=API_KEY,
                     base_url="https://api.siliconflow.cn/v1")
@@ -702,6 +700,8 @@ if submitted_ai:
         if "result" not in st.session_state:
             st.warning("请先点击“评估”按钮进行疲劳评估！")
         else:
+            st.subheader("AI 分析")
+            st.info("生成潜在人因危害分析及改善建议：")
             if st.session_state.ai_analysis_result is None:
                 try:
                     # 构造 AI 输入
