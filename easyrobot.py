@@ -138,7 +138,7 @@ def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
 
 # ⭐️ 3. 优化图像处理流程
 def process_image(image):
-    H, W = image.shape
+    H, W = (640,480)
     img = cv2.resize(image, (W, H))
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
