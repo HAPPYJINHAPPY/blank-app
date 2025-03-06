@@ -647,6 +647,11 @@ if submitted_eval:
         record = input_data.copy()
         record["评估结果"] = result
         st.session_state.predictions.append(record)
+        
+        # 重置 AI 分析相关的会话状态
+        st.session_state.ai_analysis_result = None
+        st.session_state.messages = []
+        st.session_state.show_ai_analysis = True
     else:
         st.warning("请完成所有主观感受的选择！")
 
