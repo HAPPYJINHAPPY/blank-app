@@ -548,29 +548,86 @@ st.markdown(
 # 初始化存储所有预测记录的列表
 if 'predictions' not in st.session_state:
     st.session_state.predictions = []
-st.subheader("角度参数")
-# Two-column layout for sliders
-col1, col2 = st.columns(2)
+with st.form("main_form"):
+    st.subheader("角度参数")
+    col1, col2 = st.columns(2)
+    with col1:
+        neck_flexion = st.slider("颈部前屈", 0, 60, 20)
+        neck_extension = st.slider("颈部后仰", 0, 60, 25)
+        shoulder_elevation = st.slider("肩部上举范围", 0, 180, 60)
+        shoulder_forward = st.slider("肩部前伸范围", 0, 180, 120)
+    with col2:
+        elbow_flexion = st.slider("肘部屈伸", 0, 180, 120)
+        wrist_extension = st.slider("手腕背伸", 0, 60, 15)
+        wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 30, 10)
+        back_flexion = st.slider("背部屈曲范围", 0, 60, 20)
 
-with col1:
-    neck_flexion = st.slider("颈部前屈", 0, 60, 20)
-    neck_extension = st.slider("颈部后仰", 0, 60, 25)
-    shoulder_elevation = st.slider("肩部上举范围", 0, 180, 60)
-    shoulder_forward = st.slider("肩部前伸范围", 0, 180, 120)
+    st.subheader("时间参数")
+    col3, col4 = st.columns(2)
+    with col3:
+        task_duration = st.number_input("持续时间（秒）", min_value=0, value=5)
+    with col4:
+        movement_frequency = st.number_input("重复频率（每5分钟）", min_value=0, value=35)
 
-with col2:
-    elbow_flexion = st.slider("肘部屈伸", 0, 180, 120)
-    wrist_extension = st.slider("手腕背伸", 0, 60, 15)
-    wrist_deviation = st.slider("手腕桡偏/尺偏", 0, 30, 10)
-    back_flexion = st.slider("背部屈曲范围", 0, 60, 20)
+    st.subheader("主观感受")
+    col5, col6, col7 = st.columns(3)
+    with col5:
+        body_fatigue = st.selectbox(
+            "1. 身体感到无力",
+            ['请选择', '完全没有', '偶尔', '经常', '总是'],
+            index=0
+        )
+    with col6:
+        cognitive_fatigue = st.selectbox(
+            "2. 影响睡眠",
+            ['请选择', '完全没有', '偶尔', '经常', '总是'],
+            index=0
+        )
+    with col7:
+        emotional_fatigue = st.selectbox(
+            "3. 肌肉酸痛或不适",
+            ['请选择', '完全没有', '偶尔', '经常', '总是'],
+            index=0
+        )
 
-# Task parameters
-st.subheader("时间参数")
-col3, col4 = st.columns(2)
-with col3:
-    task_duration = st.number_input("持续时间（秒）", min_value=0, value=5)
-with col4:
-    movement_frequency = st.number_input("重复频率（每5分钟）", min_value=0, value=35)
+    # 将评估按钮放在表单内
+    submitted = st.form_submit_button("开始评估")
+
+# 将评估逻辑移出表单，仅在点击时执行
+if submitted:
+    # 输入数据表格
+    input_data = pd.DataFrame({
+        "颈部前屈": [neck_flexion],
+        "颈部后仰": [neck_extension],
+        "肩部上举范围": [shoulder_elevation],
+        "肩部前伸范围": [shoulder_forward],
+        "肘部屈伸": [elbow_flexion],
+        "手腕背伸": [wrist_extension],
+        "手腕桡偏/尺偏": [wrist_deviation],
+        "背部屈曲范围": [back_flexion],
+        "持续时间": [task_duration],
+        "重复频率": [movement_frequency],
+    })
+    
+    # 执行评估逻辑
+    if body_fatigue != '请选择' and cognitive_fatigue != '请选择' and emotional_fatigue != '请选择':
+        score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
+        result = fatigue_prediction(input_data)
+        
+        # 显示结果
+        st.success(f"评估结果：{result}")
+        save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue)
+        
+        # 显示数据表格
+        st.subheader("当前评估参数")
+        st.dataframe(input_data)
+        
+        # 添加结果到记录
+        record = input_data.copy()
+        record["评估结果"] = result
+        st.session_state.predictions.append(record)
+    else:
+        st.warning("请完成所有主观感受的选择！")
 
 # 初始化会话状态
 if "show_ai_analysis" not in st.session_state:
@@ -607,81 +664,6 @@ def call_ark_api(client, messages):
     except Exception as e:
         st.error(f"调用 Ark API 时出错：{e}")
         yield f"Error: {e}"
-
-
-# 输入数据表格
-input_data = pd.DataFrame({
-    "颈部前屈": [neck_flexion],
-    "颈部后仰": [neck_extension],
-    "肩部上举范围": [shoulder_elevation],
-    "肩部前伸范围": [shoulder_forward],
-    "肘部屈伸": [elbow_flexion],
-    "手腕背伸": [wrist_extension],
-    "手腕桡偏/尺偏": [wrist_deviation],
-    "背部屈曲范围": [back_flexion],
-    "持续时间": [task_duration],
-    "重复频率": [movement_frequency],
-})
-st.subheader("参数信息")
-st.write(input_data)
-
-# 使用 columns 来并列显示问题
-col1, col2, col3 = st.columns(3)
-
-# 问题1：身体疲劳
-with col1:
-    body_fatigue = st.selectbox(
-        "1. 身体感到无力",
-        ['请选择', '完全没有', '偶尔', '经常', '总是'],
-        index=0  # 初始状态为未选择（'请选择'）
-    )
-
-# 问题2：注意力集中困难
-with col2:
-    cognitive_fatigue = st.selectbox(
-        "2. 影响睡眠",
-        ['请选择', '完全没有', '偶尔', '经常', '总是'],
-        index=0  # 初始状态为未选择（'请选择'）
-    )
-
-# 问题3：情绪疲劳
-with col3:
-    emotional_fatigue = st.selectbox(
-        "3. 肌肉酸痛或不适",
-        ['请选择', '完全没有', '偶尔', '经常', '总是'],
-        index=0  # 初始状态为未选择（'请选择'）
-    )
-
-if st.button("评估"):
-    # 如果用户未选择所有问题，则提示
-    if body_fatigue == '请选择' or cognitive_fatigue == '请选择' or emotional_fatigue == '请选择':
-        st.warning("请先选择所有问题的答案！")
-    else:
-        # 计算总得分
-        score = calculate_score(body_fatigue) + calculate_score(cognitive_fatigue) + calculate_score(emotional_fatigue)
-        # 请确保 fatigue_prediction 函数已定义
-        result = fatigue_prediction(input_data)
-        st.success(f"评估结果：{result}")
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # 保存数据到本地 CSV 文件
-        save_to_csv(input_data, result, body_fatigue, cognitive_fatigue, emotional_fatigue)
-        upload_to_github(FILE_PATH)
-        # 保存评估结果到会话状态
-        st.session_state.result = result
-        record = input_data.copy()
-        record["评估"] = result
-        st.session_state.predictions.append(record)
-
-        # 重置 AI 分析相关的会话状态
-        st.session_state.ai_analysis_result = None
-        st.session_state.messages = []
-        st.session_state.show_ai_analysis = True
-        # 不再要求用户输入API密钥
-        st.session_state.api_key_entered = False
-        if 'API_KEY' in st.session_state:
-            del st.session_state.API_KEY
-        if 'client' in st.session_state:
-            del st.session_state.client  # 删除旧的 Ark 客户端
 
 # 显示所有保存的预测记录
 if st.session_state.predictions:
