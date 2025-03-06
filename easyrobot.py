@@ -687,7 +687,15 @@ if submitted_ai:
                     base_url="https://api.siliconflow.cn/v1")
     st.session_state.client = OpenAI(api_key=API_KEY,
                                              base_url="https://api.siliconflow.cn/v1")  # 请确保 Ark 客户端正确初始化
-
+    if API_KEY:
+        st.session_state.API_KEY = API_KEY
+        st.session_state.api_key_entered = True
+        # 初始化 Ark 客户端并存储在会话状态中
+        try:
+            st.session_state.client = OpenAI(api_key=API_KEY,
+                                             base_url="https://api.siliconflow.cn/v1")  # 请确保 Ark 客户端正确初始化
+        except Exception as e:
+            st.error(f"初始化 Ark 客户端时出错：{e}")
     # AI 分析逻辑
     if st.session_state.api_key_entered and st.session_state.get("API_KEY") and st.session_state.client:
         # 检查疲劳评估结果是否存在
