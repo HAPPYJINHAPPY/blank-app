@@ -272,10 +272,14 @@ def calculate_score(answer):
 
 # 界面配置
 font_path = "SourceHanSansCN-Normal.otf"
-if os.path.exists(font_path):
+# 检查字体文件是否存在
+if not os.path.exists(font_path):
+    st.error(f"Font file not found: {font_path}")
+else:
+    # 设置字体属性
     font_prop = font_manager.FontProperties(fname=font_path)
-    plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
-    plt.rcParams['axes.unicode_minus'] = False
+    font_name = font_prop.get_name()
+
 
     # 创建自定义函数来统一设置字体
     def set_font_properties(ax, font_prop):
@@ -285,6 +289,7 @@ if os.path.exists(font_path):
         ax.title.set_fontproperties(font_prop)
         ax.xaxis.label.set_fontproperties(font_prop)
         ax.yaxis.label.set_fontproperties(font_prop)
+
 
     # 全局设置字体
     plt.rcParams['font.sans-serif'] = [font_name]
