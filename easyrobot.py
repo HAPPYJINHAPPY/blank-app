@@ -590,11 +590,15 @@ with st.form("main_form"):
             index=0
         )
 
-    # 将评估按钮放在表单内
-    submitted = st.form_submit_button("开始评估")
+        # 并排显示两个按钮
+    col_submit1, col_submit2 = st.columns(2)
+    with col_submit1:
+        submitted_eval = st.form_submit_button("开始评估")
+    with col_submit2:
+        submitted_ai = st.form_submit_button("开始AI分析")
 
 # 将评估逻辑移出表单，仅在点击时执行
-if submitted:
+if submitted_eval:
     # 输入数据表格
     input_data = pd.DataFrame({
         "颈部前屈": [neck_flexion],
@@ -672,8 +676,7 @@ if st.session_state.predictions:
     prediction_df = pd.concat(st.session_state.predictions, ignore_index=True)
     st.write(prediction_df)
 
-if st.button("开始 AI 分析"):
-    # 显示 AI 分析部分
+if submitted_ai:
     st.subheader("AI 分析")
     st.info("生成潜在人因危害分析及改善建议：")
     API_KEY = "sk-zyiqsryunuwkjonzywoqfwzksxmxngwgdqaagdscgzepnlal"  # 直接设置 API_KEY
