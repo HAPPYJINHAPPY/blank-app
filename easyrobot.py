@@ -138,14 +138,31 @@ def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
 
 # ⭐️ 3. 优化图像处理流程
 def process_image(image):
-    H, W = (640,480)
-    img = cv2.resize(image, (W, H))
+     orig_h, orig_w = image.shape[:2]
+    
+    # 动态计算缩放比例（保持宽高比）
+    target_short_side = 480  # 设置短边基准值
+    scale = target_short_side / min(orig_h, orig_w)
+    new_w = int(orig_w * scale)
+    new_h = int(orig_h * scale)
+    
+    # 等比例缩放
+    img = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    
-    pose_result = pose.process(img_rgb)
-    hands_result = hands.process(img_rgb)
-    
-    metrics = {'angles': {}}
+
+    # 计算逆缩放比例
+    inv_scale_x = orig_w / new_w
+    inv_scale_y = orig_h / new_h
+
+    # ⚡修改后的坐标获取函数
+    def get_scaled_coord(landmark, model_type):
+        if model_type == 'pose':
+            x = landmark.x * new_w * inv_scale_x
+            y = landmark.y * new_h * inv_scale_y
+        elif model_type == 'hands':
+            x = landmark.x * orig_w  # 直接使用原始尺寸
+            y = landmark.y * orig_h
+        return [x, y, landmark.z * orig_w]
     
     if pose_result.pose_landmarks:
         def get_pose_pt(landmark):
