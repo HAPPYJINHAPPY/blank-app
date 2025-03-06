@@ -200,7 +200,10 @@ def process_image(image):
                         
             metrics['angles']['Trunk Flexion'] = calculate_trunk_flexion(
                 joints['mid']['shoulder'], joints['mid']['hip'], joints['mid']['knee'])
-                
+
+            # 可视化
+            draw_landmarks(image, joints)
+        
         except KeyError as e:
             pass
             
@@ -209,6 +212,42 @@ def process_image(image):
     gc.collect()
     
     return image, metrics
+
+
+def draw_landmarks(image, joints):
+    """可视化指定关节连线"""
+    # 颜色配置
+    colors = {
+        'neck': (255, 200, 0),  # 金黄色
+        'shoulder': (0, 255, 0),  # 绿色
+        'elbow': (0, 255, 255),  # 青色
+        'wrist': (255, 0, 255)  # 品红色
+    }
+
+    # 绘制颈部前屈
+    nose = tuple(map(int, joints['nose'][:2]))
+    shoulder_mid = tuple(map(int, joints['mid']['shoulder'][:2]))
+    hip_mid = tuple(map(int, joints['mid']['hip'][:2]))
+    cv2.line(image, nose, shoulder_mid, colors['neck'], 2)
+    cv2.line(image, shoulder_mid, hip_mid, colors['neck'], 2)
+
+    # 绘制上肢
+    for side in ['left', 'right']:
+        # 肩-肘
+        pt1 = tuple(map(int, joints[side]['shoulder'][:2]))
+        pt2 = tuple(map(int, joints[side]['elbow'][:2]))
+        cv2.line(image, pt1, pt2, colors['shoulder'], 2)
+
+        # 肘-腕
+        pt3 = tuple(map(int, joints[side]['elbow'][:2]))
+        pt4 = tuple(map(int, joints[side]['wrist'][:2]))
+        cv2.line(image, pt3, pt4, colors['elbow'], 2)
+
+        # 手部连线
+        if 'hand_wrist' in joints[side]:
+            pt5 = tuple(map(int, joints[side]['hand_wrist'][:2]))
+            pt6 = tuple(map(int, joints['side']['index_tip'][:2]))
+            cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
 # GitHub相关函数
 def get_file_sha(file_path):
