@@ -36,6 +36,12 @@ GITHUB_REPO = 'blank-app'
 GITHUB_BRANCH = 'main' 
 FILE_PATH = 'fatigue_data.csv'
 
+# 初始化模型
+mp_pose = mp.solutions.pose
+mp_hands = mp.solutions.hands
+pose = mp_pose.Pose(min_detection_confidence=0.8, min_tracking_confidence=0.8)
+hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+
 # ⭐️ 2. 缓存数据加载和模型训练
 @st.cache_data
 def load_and_train():
