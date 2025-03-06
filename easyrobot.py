@@ -540,6 +540,18 @@ if st.sidebar.checkbox("角度测量"):
     else:
         st.info("请上传JPG/PNG格式的图片")
 
+# 初始化会话状态
+if "show_ai_analysis" not in st.session_state:
+    st.session_state.show_ai_analysis = False
+if "api_key_entered" not in st.session_state:
+    st.session_state.api_key_entered = False
+if "API_KEY" not in st.session_state:
+    st.session_state.API_KEY = None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if 'client' not in st.session_state:
+    st.session_state.client = None
+
 
 def fatigue_prediction(input_data):
     prediction = model.predict(input_data)
@@ -634,18 +646,6 @@ if submitted_eval:
         st.session_state.predictions.append(record)
     else:
         st.warning("请完成所有主观感受的选择！")
-
-# 初始化会话状态
-if "show_ai_analysis" not in st.session_state:
-    st.session_state.show_ai_analysis = False
-if "api_key_entered" not in st.session_state:
-    st.session_state.api_key_entered = False
-if "API_KEY" not in st.session_state:
-    st.session_state.API_KEY = None
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if 'client' not in st.session_state:
-    st.session_state.client = None
 
 
 def call_ark_api(client, messages):
