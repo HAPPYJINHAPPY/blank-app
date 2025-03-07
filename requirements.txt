@@ -10,7 +10,7 @@ requests
 OpenAI
 Image
 pandas
-streamlit
+streamlit==1.37.0
 Pillow
 mediapipe>=0.10.20
 opencv-python-headless==4.9.0.80
