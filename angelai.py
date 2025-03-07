@@ -169,7 +169,7 @@ def process_image(image):
                 joints['鼻子'], joints['mid']['肩膀'], joints['mid']['臀部'])
 
             # 肩部运动
-            for side in ['left', 'right']:
+            for side in ['左侧', '右侧']:
                 # 上举（冠状面）
                 metrics['angles'][f'{side.capitalize()} 肩部上举'] = calculate_angle(
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
@@ -178,12 +178,12 @@ def process_image(image):
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
 
             # 肘部屈伸
-            for side in ['left', 'right']:
+            for side in ['左侧', '右侧']:
                 metrics['angles'][f'{side.capitalize()} 肘部屈伸'] = calculate_angle(
                     joints[side]['肩膀'], joints[side]['肘部'], joints[side]['手腕'], 'sagittal')
 
             # 手腕动作
-            for side in ['left', 'right']:
+            for side in ['左侧', '右侧']:
                 if '手腕' in joints[side]:
                     # 背伸
                     metrics['angles'][f'{side.capitalize()} 手腕背伸'] = calculate_angle(
