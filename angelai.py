@@ -228,7 +228,7 @@ def draw_landmarks(image, joints):
     cv2.line(image, shoulder_mid, hip_mid, colors['neck'], 2)
 
     # 绘制上肢
-    for side in ['left', 'right']:
+    for side in ['左侧', '右侧']:
         # 肩-肘
         pt1 = tuple(map(int, joints[side]['肩膀'][:2]))
         pt2 = tuple(map(int, joints[side]['肘部'][:2]))
