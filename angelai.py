@@ -163,7 +163,7 @@ def process_image(image):
                     '食指尖端': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
                 })
 
-       # 计算指定关节角度
+        # 计算指定关节角度
         try:
             metrics['angles']['颈部前屈'] = calculate_neck_flexion(
                 joints['鼻子'], joints['mid']['肩膀'], joints['mid']['臀部'])
@@ -196,8 +196,7 @@ def process_image(image):
         
         except Exception as e:
             print(f"错误发生: {e}")
-
-
+        
             # 背部屈曲
             metrics['angles']['背部屈曲'] = calculate_trunk_flexion(
                 joints['mid']['肩膀'], joints['mid']['臀部'], joints['mid']['膝部'])
@@ -209,6 +208,13 @@ def process_image(image):
             print(f"关键点缺失: {str(e)}")
 
     return image, metrics
+
+# 检查图像数据是否有效
+if isinstance(processed_img, np.ndarray):
+    st.image(processed_img, channels="BGR", use_container_width=True)
+else:
+    st.error("图像处理失败，请检查输入图像格式。")
+
 
 def draw_landmarks(image, joints):
     """可视化指定关节连线"""
