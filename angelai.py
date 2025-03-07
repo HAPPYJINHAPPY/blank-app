@@ -239,11 +239,12 @@ def draw_landmarks(image, joints):
         pt4 = tuple(map(int, joints[side]['手腕'][:2]))
         cv2.line(image, pt3, pt4, colors['elbow'], 2)
 
-        # 手部连线
-        if '手腕' in joints[side]:
+        # 手部连线（如果存在食指尖端，绘制手部线条）
+        if '手腕' in joints[side] and '食指尖端' in joints[side]:
             pt5 = tuple(map(int, joints[side]['手腕'][:2]))
             pt6 = tuple(map(int, joints[side]['食指尖端'][:2]))  # 修正bug
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
+
             
 # Streamlit界面
 st.title("职业健康分析系统")
