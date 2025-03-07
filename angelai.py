@@ -128,14 +128,14 @@ def process_image(image):
 
         # 基础关节点
         joints = {
-            '左侧': {
+            'left': {
                 '肩膀': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
                 '肘部': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW),
                 '手腕': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
                 '臀部': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
                 '膝部': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
             },
-            '右侧': {
+            'right': {
                 '肩膀': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
                 '肘部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
                 '手腕': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
@@ -156,7 +156,7 @@ def process_image(image):
         # 合并手部数据
         if hands_result.multi_hand_landmarks:
             for hand in hands_result.multi_hand_landmarks:
-                side = '左侧' if hand.landmark[0].x < 0.5 else '右侧'
+                side = 'left' if hand.landmark[0].x < 0.5 else 'right'
                 joints[side].update({
                     '手腕': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
                     '食指中节': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
@@ -165,38 +165,36 @@ def process_image(image):
 
         # 计算指定关节角度
         try:
+            # 颈部前屈
             metrics['angles']['颈部前屈'] = calculate_neck_flexion(
                 joints['鼻子'], joints['mid']['肩膀'], joints['mid']['臀部'])
-        
+
             # 肩部运动
-            for side in ['左侧', '右侧']:
+            for side in ['left', 'right']:
                 # 上举（冠状面）
                 metrics['angles'][f'{side.capitalize()} 肩部上举'] = calculate_angle(
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
                 # 前伸（矢状面）
                 metrics['angles'][f'{side.capitalize()} 肩部前伸'] = calculate_angle(
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
-        
+
             # 肘部屈伸
-            for side in ['左侧', '右侧']:
+            for side in ['left', 'right']:
                 metrics['angles'][f'{side.capitalize()} 肘部屈伸'] = calculate_angle(
                     joints[side]['肩膀'], joints[side]['肘部'], joints[side]['手腕'], 'sagittal')
-        
+
             # 手腕动作
-            for side in ['左侧', '右侧']:
+            for side in ['left', 'right']:
                 if '手腕' in joints[side]:
                     # 背伸
                     metrics['angles'][f'{side.capitalize()} 手腕背伸'] = calculate_angle(
                         joints[side]['肘部'], joints[side]['手腕'],
-                        joints[side].get('食指尖端', [0, 0, 0]), 'sagittal')
+                        joints[side]['食指尖端'], 'sagittal')
                     # 桡偏
                     metrics['angles'][f'{side.capitalize()} 手腕桡偏'] = calculate_angle(
                         joints[side]['食指中节'], joints[side]['手腕'],
-                        joints[side].get('食指尖端', [0, 0, 0]), 'frontal')
-        
-        except Exception as e:
-            print(f"错误发生: {e}")
-        
+                        joints[side]['食指尖端'], 'frontal')
+
             # 背部屈曲
             metrics['angles']['背部屈曲'] = calculate_trunk_flexion(
                 joints['mid']['肩膀'], joints['mid']['臀部'], joints['mid']['膝部'])
@@ -208,7 +206,6 @@ def process_image(image):
             print(f"关键点缺失: {str(e)}")
 
     return image, metrics
-
 
 def draw_landmarks(image, joints):
     """可视化指定关节连线"""
@@ -228,7 +225,7 @@ def draw_landmarks(image, joints):
     cv2.line(image, shoulder_mid, hip_mid, colors['neck'], 2)
 
     # 绘制上肢
-    for side in ['左侧', '右侧']:
+    for side in ['left', 'right']:
         # 肩-肘
         pt1 = tuple(map(int, joints[side]['肩膀'][:2]))
         pt2 = tuple(map(int, joints[side]['肘部'][:2]))
@@ -239,15 +236,14 @@ def draw_landmarks(image, joints):
         pt4 = tuple(map(int, joints[side]['手腕'][:2]))
         cv2.line(image, pt3, pt4, colors['elbow'], 2)
 
-        # 手部连线（如果存在食指尖端，绘制手部线条）
-        if '手腕' in joints[side] and '食指尖端' in joints[side]:
+        # 手部连线
+        if '手腕' in joints[side]:
             pt5 = tuple(map(int, joints[side]['手腕'][:2]))
             pt6 = tuple(map(int, joints[side]['食指尖端'][:2]))  # 修正bug
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
-            
 # Streamlit界面
-st.title("角度分析系统")
+st.title("职业健康分析系统")
 st.markdown("""
 **分析关节：​**
 - 颈部前屈
@@ -274,14 +270,10 @@ if uploaded_file and uploaded_file.type.startswith("image"):
     # 双栏布局
     col1, col2 = st.columns(2)
     with col1:
-        # 确保图像是正确格式（PIL 图像或 numpy 数组）
-        processed_img_pil = Image.fromarray(processed_img) if isinstance(processed_img, np.ndarray) else processed_img
-
-        # 使用 Streamlit 显示图像
-        st.image(processed_img_pil, channels="BGR", use_container_width=True)
+        st.image(processed_img, channels="BGR", use_container_width=True)
 
     with col2:
-        st.subheader("关节角度分析")
+        st.subheader("关节负荷分析")
         for joint, angle in metrics['angles'].items():
             status = "⚠️" if angle > threshold else "✅"
             st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
