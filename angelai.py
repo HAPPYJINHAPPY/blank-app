@@ -247,7 +247,7 @@ def draw_landmarks(image, joints):
 
             
 # Streamlit界面
-st.title("职业健康分析系统")
+st.title("角度分析系统")
 st.markdown("""
 **分析关节：​**
 - 颈部前屈
