@@ -89,17 +89,15 @@ def calculate_neck_flexion(nose, shoulder_mid, hip_mid):
 def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
     """计算背部屈曲角度（偏离中心位的角度）"""
     try:
-        # 计算躯干轴线（肩膀中点到髋部中点）
-        torso_vector = hip_mid - shoulder_mid
-        print(f"躯干向量: {torso_vector}")  # 调试输出
+        # 计算躯干向量（肩膀中点到髋部中点）
+        torso_vector = np.array(hip_mid) - np.array(shoulder_mid)
         torso_angle = np.degrees(np.arctan2(torso_vector[1], torso_vector[0]))
 
-        # 计算腿部轴线（髋部中点到膝部中点）
-        leg_vector = knee_mid - hip_mid
-        print(f"腿部向量: {leg_vector}")  # 调试输出
+        # 计算腿部向量（髋部中点到膝部中点）
+        leg_vector = np.array(knee_mid) - np.array(hip_mid)
         leg_angle = np.degrees(np.arctan2(leg_vector[1], leg_vector[0]))
 
-        # 计算偏离中心位的角度
+        # 计算背部屈曲角度：躯干向量与腿部向量的夹角
         flexion_angle = leg_angle - torso_angle
 
         # 规范化角度到 0-180 度范围
@@ -108,15 +106,10 @@ def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
         if flexion_angle > 180:
             flexion_angle = 360 - flexion_angle
 
-        # 转换为偏离中心位的角度
-        flexion_angle = 180 - flexion_angle
-        print(f"背部屈曲角度: {flexion_angle}")  # 调试输出
-
         return flexion_angle
     except Exception as e:
         print(f"背部屈曲计算错误: {str(e)}")
         return 0.0
-
 
 def process_image(image):
     H, W, _ = image.shape
@@ -246,7 +239,7 @@ def draw_landmarks(image, joints):
         # 手部连线
         if 'hand_wrist' in joints[side]:
             pt5 = tuple(map(int, joints[side]['hand_wrist'][:2]))
-            pt6 = tuple(map(int, joints['side']['index_tip'][:2]))
+            pt6 = tuple(map(int, joints[side]['index_tip'][:2]))  # 修正bug
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
 # Streamlit界面
