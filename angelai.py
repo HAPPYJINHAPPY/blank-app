@@ -175,7 +175,7 @@ def process_image(image):
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
                 # 前伸（矢状面）
                 metrics['angles'][f'{side.capitalize()} 肩部前伸'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膚'], joints[side]['肘部'], 'sagittal')
+                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
         
             # 肘部屈伸
             for side in ['左侧', '右侧']:
@@ -188,11 +188,11 @@ def process_image(image):
                     # 背伸
                     metrics['angles'][f'{side.capitalize()} 手腕背伸'] = calculate_angle(
                         joints[side]['肘部'], joints[side]['手腕'],
-                        joints[side]['食指尖端'], 'sagittal')
+                        joints[side].get('食指尖端', [0, 0, 0]), 'sagittal')
                     # 桡偏
                     metrics['angles'][f'{side.capitalize()} 手腕桡偏'] = calculate_angle(
                         joints[side]['食指中节'], joints[side]['手腕'],
-                        joints[side]['食指尖端'], 'frontal')
+                        joints[side].get('食指尖端', [0, 0, 0]), 'frontal')
         
         except Exception as e:
             print(f"错误发生: {e}")
