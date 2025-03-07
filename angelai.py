@@ -209,12 +209,6 @@ def process_image(image):
 
     return image, metrics
 
-# 检查图像数据是否有效
-if isinstance(processed_img, np.ndarray):
-    st.image(processed_img, channels="BGR", use_container_width=True)
-else:
-    st.error("图像处理失败，请检查输入图像格式。")
-
 
 def draw_landmarks(image, joints):
     """可视化指定关节连线"""
