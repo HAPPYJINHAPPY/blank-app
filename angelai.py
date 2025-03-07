@@ -156,7 +156,7 @@ def process_image(image):
         # 合并手部数据
         if hands_result.multi_hand_landmarks:
             for hand in hands_result.multi_hand_landmarks:
-                side = 'left' if hand.landmark[0].x < 0.5 else 'right'
+                side = '左侧' if hand.landmark[0].x < 0.5 else '右侧'
                 joints[side].update({
                     '手腕': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
                     '食指中节': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
