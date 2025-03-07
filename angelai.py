@@ -274,7 +274,11 @@ if uploaded_file and uploaded_file.type.startswith("image"):
     # 双栏布局
     col1, col2 = st.columns(2)
     with col1:
-        st.image(processed_img, channels="BGR", use_container_width=True)
+        # 确保图像是正确格式（PIL 图像或 numpy 数组）
+        processed_img_pil = Image.fromarray(processed_img) if isinstance(processed_img, np.ndarray) else processed_img
+
+        # 使用 Streamlit 显示图像
+        st.image(processed_img_pil, channels="BGR", use_container_width=True)
 
     with col2:
         st.subheader("关节角度分析")
