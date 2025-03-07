@@ -163,11 +163,11 @@ def process_image(image):
                     '食指尖端': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
                 })
 
-        # 计算指定关节角度
+       # 计算指定关节角度
         try:
-             metrics['angles']['颈部前屈'] = calculate_neck_flexion(
+            metrics['angles']['颈部前屈'] = calculate_neck_flexion(
                 joints['鼻子'], joints['mid']['肩膀'], joints['mid']['臀部'])
-
+        
             # 肩部运动
             for side in ['左侧', '右侧']:
                 # 上举（冠状面）
@@ -175,13 +175,13 @@ def process_image(image):
                     joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
                 # 前伸（矢状面）
                 metrics['angles'][f'{side.capitalize()} 肩部前伸'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
-
+                    joints[side]['臀部'], joints[side]['肩膚'], joints[side]['肘部'], 'sagittal')
+        
             # 肘部屈伸
             for side in ['左侧', '右侧']:
                 metrics['angles'][f'{side.capitalize()} 肘部屈伸'] = calculate_angle(
                     joints[side]['肩膀'], joints[side]['肘部'], joints[side]['手腕'], 'sagittal')
-
+        
             # 手腕动作
             for side in ['左侧', '右侧']:
                 if '手腕' in joints[side]:
@@ -193,6 +193,10 @@ def process_image(image):
                     metrics['angles'][f'{side.capitalize()} 手腕桡偏'] = calculate_angle(
                         joints[side]['食指中节'], joints[side]['手腕'],
                         joints[side]['食指尖端'], 'frontal')
+        
+        except Exception as e:
+            print(f"错误发生: {e}")
+
 
             # 背部屈曲
             metrics['angles']['背部屈曲'] = calculate_trunk_flexion(
