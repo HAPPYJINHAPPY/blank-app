@@ -72,8 +72,14 @@ def calculate_neck_flexion(nose, shoulder_mid, hip_mid):
         # Calculate deviation
         flexion_angle = head_angle - torso_angle
 
-        # Normalize to 0-180
-        flexion_angle = 180 - (flexion_angle % 360 if flexion_angle > 180 else flexion_angle)
+        # 规范化角度到 0-180 度范围
+        if flexion_angle < 0:
+            flexion_angle += 360
+        if flexion_angle > 180:
+            flexion_angle = 360 - flexion_angle
+
+        # 转换为偏离中心位的角度
+        flexion_angle = 180 - flexion_angle
 
         return flexion_angle
     except Exception as e:
@@ -93,7 +99,12 @@ def calculate_trunk_flexion(shoulder_mid, hip_mid, knee_mid):
 
         # Flexion calculation
         flexion_angle = leg_angle - torso_angle
-        flexion_angle = 180 - (flexion_angle % 360 if flexion_angle > 180 else flexion_angle)
+        # 规范化角度到 0-180 度范围
+        if flexion_angle < 0:
+            flexion_angle += 360
+        if flexion_angle > 180:
+            flexion_angle = 360 - flexion_angle
+
 
         return flexion_angle
     except Exception as e:
