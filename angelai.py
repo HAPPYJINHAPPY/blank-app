@@ -247,19 +247,19 @@ def draw_landmarks(image, joints):
 
             
 # Streamlit interface
-st.title(“Angle Analysis System”)
-st.markdown(“””
+st.title("Angle Analysis System")
+st.markdown("""
 **Analyze joints:**
 - Neck forward flexion
 - Shoulder supination/extension
 - Elbow flexion/extension
 - Dorsal extension/radial deviation of the wrist
 - Dorsiflexion
-““”)
+""")
 
-uploaded_file = st.file_uploader(“Upload work scene image”, type=[“jpg”, “png”])
-threshold = st.slider(“Set risk threshold (°)”, 30, 90, 60)
-if uploaded_file and uploaded_file.type.startswith(“image”):.
+uploaded_file = st.file_uploader("Upload work scene image", type=["jpg", "png"])
+threshold = st.slider("Set risk threshold (°)", 30, 90, 60)
+if uploaded_file and uploaded_file.type.startswith("image"):.
     img = Image.open(uploaded_file)
     img_np = np.array(img)
 
@@ -277,9 +277,9 @@ if uploaded_file and uploaded_file.type.startswith(“image”):.
         st.image(processed_img, channels=“BGR”, use_container_width=True)
 
     with col2.
-        st.subheader(“Joint angle analysis”)
+        st.subheader("Joint angle analysis")
         for joint, angle in metrics['angles'].items()::
             status = “⚠️” if angle > threshold else “✅”
-            st.markdown(f“{status} **{joint}**: `{angle:.1f}°`”)
+            st.markdown(f"{status} **{joint}**: `{angle:.1f}°`")
 else.
-    st.info(“Please upload an image in JPG/PNG format”)
+    st.info("Please upload an image in JPG/PNG format")
