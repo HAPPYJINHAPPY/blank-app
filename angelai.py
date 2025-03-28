@@ -238,7 +238,7 @@ def draw_landmarks(image, joints):
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
 # Streamlit UI
-st.title("Ergonomic Analysis System")
+st.title("Joint Angle Measurement")
 st.markdown("""
 **Analyzed Joints:**
 - Neck flexion
