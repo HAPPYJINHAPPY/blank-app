@@ -246,40 +246,40 @@ def draw_landmarks(image, joints):
             cv2.line(image, pt5, pt6, colors['wrist'], 2)
 
             
-# Streamlit界面
-st.title("角度分析系统")
-st.markdown("""
-**分析关节：​**
-- 颈部前屈
-- 肩部上举/前伸
-- 肘部屈伸
-- 手腕背伸/桡偏
-- 背部屈曲
-""")
+# Streamlit interface
+st.title(“Angle Analysis System”)
+st.markdown(“””
+**Analyze joints:**
+- Neck forward flexion
+- Shoulder supination/extension
+- Elbow flexion/extension
+- Dorsal extension/radial deviation of the wrist
+- Dorsiflexion
+““”)
 
-uploaded_file = st.file_uploader("上传工作场景图", type=["jpg", "png"])
-threshold = st.slider("设置风险阈值(°)", 30, 90, 60)
-if uploaded_file and uploaded_file.type.startswith("image"):
+uploaded_file = st.file_uploader(“Upload work scene image”, type=[“jpg”, “png”])
+threshold = st.slider(“Set risk threshold (°)”, 30, 90, 60)
+if uploaded_file and uploaded_file.type.startswith(“image”):.
     img = Image.open(uploaded_file)
     img_np = np.array(img)
 
-    # 处理RGBA图像
-    if img_np.shape[-1] == 4:
+    # Process RGBA images
+    if img_np.shape[-1] == 4.
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
-    else:
+    else: img_np = cv2.
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
     processed_img, metrics = process_image(img_np)
 
-    # 双栏布局
+    # Two-column layout
     col1, col2 = st.columns(2)
-    with col1:
-        st.image(processed_img, channels="BGR", use_container_width=True)
+    with col1.
+        st.image(processed_img, channels=“BGR”, use_container_width=True)
 
-    with col2:
-        st.subheader("关节角度分析")
-        for joint, angle in metrics['angles'].items():
-            status = "⚠️" if angle > threshold else "✅"
-            st.markdown(f"{status} ​**{joint}**: `{angle:.1f}°`")
-else:
-    st.info("请上传JPG/PNG格式的图片")
+    with col2.
+        st.subheader(“Joint angle analysis”)
+        for joint, angle in metrics['angles'].items()::
+            status = “⚠️” if angle > threshold else “✅”
+            st.markdown(f“{status} **{joint}**: `{angle:.1f}°`”)
+else.
+    st.info(“Please upload an image in JPG/PNG format”)
