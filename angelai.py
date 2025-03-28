@@ -274,7 +274,7 @@ if uploaded_file and uploaded_file.type.startswith("image"):.
     # Two-column layout
     col1, col2 = st.columns(2)
     with col1.
-        st.image(processed_img, channels=“BGR”, use_container_width=True)
+        st.image(processed_img, channels="BGR", use_container_width=True)
 
     with col2.
         st.subheader("Joint angle analysis")
