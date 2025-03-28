@@ -122,35 +122,43 @@ def process_image(image):
     metrics = {'angles': {}}
 
     if pose_result.pose_landmarks:
-        # 关键点获取
+        # 关键点获取（统一命名）
         def get_pose_pt(landmark):
             return get_coord(pose_result.pose_landmarks.landmark[landmark], 'pose', W, H)
 
-        # 基础关节点
         joints = {
-            'left side': {
-                'Shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
-                'Elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW), 
-                'Wrists': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
-                'Hip': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
+            'left_side': {
+                'shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
+                'elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW),
+                'wrist': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
+                'hip': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
                 'knee': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
             },
-            'right side': {
-                'Shoulder': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
-                'Elbows': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
-                'Wrists': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
-                'Hip': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
-                'Knees': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
+            'right_side': {
+                'shoulder': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
+                'elbow': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
+                'wrist': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
+                'hip': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
+                'knee': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
             },
             'mid': {
-                'shoulders': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] +
-                          get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)[i]) / 2 for i in range(3)],
-                'Hip': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] +
-                          get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP)[i]) / 2 for i in range(3)],
-                'knee': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] +
-                         get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)[i]) / 2 for i in range(3)]
+                'shoulder_mid': [
+                    (get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] + 
+                     get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)[i])/2 
+                    for i in range(3)
+                ],
+                'hip_mid': [
+                    (get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] + 
+                     get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP)[i])/2 
+                    for i in range(3)
+                ],
+                'knee_mid': [
+                    (get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] + 
+                     get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)[i])/2 
+                    for i in range(3)
+                ]
             },
-            'Nose': get_pose_pt(mp_pose.PoseLandmark.NOSE)
+            'nose': get_pose_pt(mp_pose.PoseLandmark.NOSE)
         }
         # 合并手部数据
         if hands_result.multi_hand_landmarks:
