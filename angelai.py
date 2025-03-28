@@ -259,7 +259,7 @@ st.markdown("""
 
 uploaded_file = st.file_uploader("Upload work scene image", type=["jpg", "png"])
 threshold = st.slider("Set risk threshold (°)", 30, 90, 60)
-if uploaded_file and uploaded_file.type.startswith("image"):.
+if uploaded_file and uploaded_file.type.startswith("image"):
     img = Image.open(uploaded_file)
     img_np = np.array(img)
 
