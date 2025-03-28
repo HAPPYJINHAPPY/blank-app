@@ -130,7 +130,7 @@ def process_image(image):
         joints = {
             'left side': {
                 'Shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
-                'Elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW), {
+                'Elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW), 
                 'Wrists': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
                 'Hip': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
                 'knee': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
