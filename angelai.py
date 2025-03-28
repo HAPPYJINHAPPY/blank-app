@@ -264,19 +264,19 @@ if uploaded_file and uploaded_file.type.startswith("image"):
     img_np = np.array(img)
 
     # Process RGBA images
-    if img_np.shape[-1] == 4.
+    if img_np.shape[-1] == 4:
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
-    else: img_np = cv2.
+    else: img_np = cv2:
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
     processed_img, metrics = process_image(img_np)
 
     # Two-column layout
     col1, col2 = st.columns(2)
-    with col1.
+    with col1:
         st.image(processed_img, channels="BGR", use_container_width=True)
 
-    with col2.
+    with col2:
         st.subheader("Joint angle analysis")
         for joint, angle in metrics['angles'].items()::
             status = "⚠️"if angle > threshold else "✅"
