@@ -279,7 +279,7 @@ if uploaded_file and uploaded_file.type.startswith("image"):.
     with col2.
         st.subheader("Joint angle analysis")
         for joint, angle in metrics['angles'].items()::
-            status = “⚠️” if angle > threshold else “✅”
+            status = "⚠️"if angle > threshold else "✅"
             st.markdown(f"{status} **{joint}**: `{angle:.1f}°`")
 else.
     st.info("Please upload an image in JPG/PNG format")
