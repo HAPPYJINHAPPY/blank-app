@@ -266,7 +266,7 @@ if uploaded_file and uploaded_file.type.startswith("image"):
     # Process RGBA images
     if img_np.shape[-1] == 4:
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
-    else: img_np = cv2:
+    else: img_np = cv2
         img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
     processed_img, metrics = process_image(img_np)
