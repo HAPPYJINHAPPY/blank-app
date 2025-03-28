@@ -128,71 +128,70 @@ def process_image(image):
 
         # 基础关节点
         joints = {
-            '左侧': {
-                '肩膀': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
-                '肘部': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW),
-                '手腕': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
-                '臀部': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
-                '膝部': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
+            'left side': {
+                'Shoulder': get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER),
+                'Elbow': get_pose_pt(mp_pose.PoseLandmark.LEFT_ELBOW), {
+                'Wrists': get_pose_pt(mp_pose.PoseLandmark.LEFT_WRIST),
+                'Hip': get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP),
+                'knee': get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)
             },
-            '右侧': {
-                '肩膀': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
-                '肘部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
-                '手腕': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
-                '臀部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
-                '膝部': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
+            'right side': {
+                'Shoulder': get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER),
+                'Elbows': get_pose_pt(mp_pose.PoseLandmark.RIGHT_ELBOW),
+                'Wrists': get_pose_pt(mp_pose.PoseLandmark.RIGHT_WRIST),
+                'Hip': get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP),
+                'Knees': get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)
             },
             'mid': {
-                '肩膀': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] +
+                'shoulders': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_SHOULDER)[i] +
                           get_pose_pt(mp_pose.PoseLandmark.RIGHT_SHOULDER)[i]) / 2 for i in range(3)],
-                '臀部': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] +
+                'Hip': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_HIP)[i] +
                           get_pose_pt(mp_pose.PoseLandmark.RIGHT_HIP)[i]) / 2 for i in range(3)],
-                '膝部': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] +
+                'knee': [(get_pose_pt(mp_pose.PoseLandmark.LEFT_KNEE)[i] +
                          get_pose_pt(mp_pose.PoseLandmark.RIGHT_KNEE)[i]) / 2 for i in range(3)]
             },
-            '鼻子': get_pose_pt(mp_pose.PoseLandmark.NOSE)
+            'Nose': get_pose_pt(mp_pose.PoseLandmark.NOSE)
         }
-
         # 合并手部数据
         if hands_result.multi_hand_landmarks:
             for hand in hands_result.multi_hand_landmarks:
-                side = '左侧' if hand.landmark[0].x < 0.5 else '右侧'
+                side = 'left' if hand.landmark[0].x < 0.5 else 'right'
                 joints[side].update({
-                    '手腕': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
-                    '食指中节': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
-                    '食指尖端': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
+                    'Wrist': get_coord(hand.landmark[mp_hands.HandLandmark.WRIST], 'hands', W, H),
+                    'Index Finger Middle Joint': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP], 'hands', W, H),
+                    'Index Finger Tip': get_coord(hand.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP], 'hands', W, H)
                 })
 
         # 计算指定关节角度
         try:
-            metrics['angles']['颈部前屈'] = calculate_neck_flexion(
-                joints['鼻子'], joints['mid']['肩膀'], joints['mid']['臀部'])
-        
+            metrics['angles']['Neck forward flexion'] = calculate_neck_flexion(
+                joints['nose'], joints['mid']['shoulder'], joints['mid']['hip'])
+         
             # 肩部运动
-            for side in ['左侧', '右侧']:
-                # 上举（冠状面）
-                metrics['angles'][f'{side.capitalize()} 肩部上举'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'frontal')
-                # 前伸（矢状面）
-                metrics['angles'][f'{side.capitalize()} 肩部前伸'] = calculate_angle(
-                    joints[side]['臀部'], joints[side]['肩膀'], joints[side]['肘部'], 'sagittal')
+            for side in ['left', 'right']:
+                # Supination (coronal plane)
+                metrics['angles'][f'{side.capitalize()} shoulder supination'] = calculate_angle(
+                    joints[side]['hips'], joints[side]['shoulders'], joints[side]['elbows'], 'frontal')
+                # Anterior extension (sagittal plane)
+                metrics['angles'][f'{side.capitalize()} shoulder forward'] = calculate_angle(
+                    joints[side]['hip'], joints[side]['shoulder'], joints[side]['elbow'], 'sagittal')
         
-            # 肘部屈伸
-            for side in ['左侧', '右侧']:
-                metrics['angles'][f'{side.capitalize()} 肘部屈伸'] = calculate_angle(
-                    joints[side]['肩膀'], joints[side]['肘部'], joints[side]['手腕'], 'sagittal')
+            # Elbow flexion
+            for side in ['left', 'right']:
+                metrics['angles'][f'{side.capitalize()} elbow flexion'] = calculate_angle(
+                    joints[side]['shoulder'], joints[side]['elbow'], joints[side]['wrist'], 'sagittal')
         
-            # 手腕动作
-            for side in ['左侧', '右侧']:
-                if '手腕' in joints[side]:
-                    # 背伸
-                    metrics['angles'][f'{side.capitalize()} 手腕背伸'] = calculate_angle(
-                        joints[side]['肘部'], joints[side]['手腕'],
-                        joints[side].get('食指尖端', [0, 0, 0]), 'sagittal')
-                    # 桡偏
-                    metrics['angles'][f'{side.capitalize()} 手腕桡偏'] = calculate_angle(
-                        joints[side]['食指中节'], joints[side]['手腕'],
-                        joints[side].get('食指尖端', [0, 0, 0]), 'frontal')
+            # Wrist movements
+            for side in ['left', 'right']:
+                if 'wrist' in joints[side]:
+                    # dorsal extension
+                    metrics['angles'][f'{side.capitalize()} wrist dorsal extension'] = calculate_angle(
+                        joints[side]['elbow'], joints[side]['wrist'].
+                        joints[side].get('tip of index finger', [0, 0, 0]), 'sagittal')
+                    # radial deviation
+                    metrics['angles'][f'{side.capitalize()} wrist radial deviation'] = calculate_angle(
+                        joints[side]['index finger middle joint'], joints[side]['wrist'].
+                        joints[side].get('tip of index finger', [0, 0, 0]), 'frontal')
         
         except Exception as e:
             print(f"错误发生: {e}")
